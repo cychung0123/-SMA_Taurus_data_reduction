@@ -9,20 +9,111 @@
 
 # load raw data
 readdata, dir='SMA2021BA003_track3'
-# There is no Tsys of antenna 1, flag it. 
+# There is no Tsys of antenna 1, replace Tsys.
+
+
+
+
+select,baseline='2-4',/reset
+t1=sp[psf].tssb
+select,baseline='2-5',/reset
+t2=sp[psf].tssb
+select,baseline='2-6',/reset
+t3=sp[psf].tssb
+select,baseline='2-7',/reset
+t4=sp[psf].tssb
+select,baseline='2-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-2',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-4',/reset
+t1=sp[psf].tssb
+select,baseline='4-5',/reset
+t2=sp[psf].tssb
+select,baseline='4-6',/reset
+t3=sp[psf].tssb
+select,baseline='4-7',/reset
+t4=sp[psf].tssb
+select,baseline='4-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-4',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-5',/reset
+t1=sp[psf].tssb
+select,baseline='4-5',/reset
+t2=sp[psf].tssb
+select,baseline='5-6',/reset
+t3=sp[psf].tssb
+select,baseline='5-7',/reset
+t4=sp[psf].tssb
+select,baseline='5-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-5',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-6',/reset
+t1=sp[psf].tssb
+select,baseline='4-6',/reset
+t2=sp[psf].tssb
+select,baseline='5-6',/reset
+t3=sp[psf].tssb
+select,baseline='6-7',/reset
+t4=sp[psf].tssb
+select,baseline='6-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-6',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-7',/reset
+t1=sp[psf].tssb
+select,baseline='4-7',/reset
+t2=sp[psf].tssb
+select,baseline='5-7',/reset
+t3=sp[psf].tssb
+select,baseline='6-7',/reset
+t4=sp[psf].tssb
+select,baseline='7-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-7',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-8',/reset
+t1=sp[psf].tssb
+select,baseline='4-8',/reset
+t2=sp[psf].tssb
+select,baseline='5-8',/reset
+t3=sp[psf].tssb
+select,baseline='6-8',/reset
+t4=sp[psf].tssb
+select,baseline='7-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-8',/reset
+sp[psf].tssb=tavg
+
+
+
+
 
 # flag antenna 1
-select, /p, /reset
-result=dat_filter(s_f, '"blcd" like "1"  ')
-flag,/flag
+# select, /p, /reset
+# result=dat_filter(s_f, '"blcd" like "1"  ')
+# flag,/flag
 
 # check the spectra to find the channel range to generate continuum
-select, /p, /reset, sideband='l', source=['3c84']
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-plot_spectra, color_var ='band'
+# select, /p, /reset, sideband='l', source=['3c84']
+# result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+# plot_spectra, color_var ='band'
 
 # re-generate continuum data by performing spectral averaging over the 6 spectral windows
-select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 plot_continuum, x='int'
 # passband cal is 3c84
@@ -39,6 +130,10 @@ select, /p, /reset
 uti_checkspike, source='3c84', /baseline, threshold=5, /fix, sample=1
 select, /p, /reset
 uti_checkspike, source='3c84', /baseline, threshold=5, /fix, sample=1
+select, /p, /reset
+uti_checkspike, source='3c84', /baseline, threshold=5, /fix, sample=1
+
+
 
 # inspect spectra
 select, /p, /reset, sideband='l', source=['3c84']
@@ -63,7 +158,7 @@ select, /p, /reset, sideband='l', band='s4'
 uti_chanfix, sample=1, channel=696
 
 # regenerate continuum
-select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 plot_continuum, x='int'
 # check the data was flagged correctly
@@ -85,6 +180,8 @@ mir_save, 'ChiaYing_track1.mir', /new
 # gain    : 0510+180, 0418+380, 3c84
 
 #
+# Baobab-2022-Feb.-28: There are remaining spikes in the 3c84 spectra
+#
 ##########################################################################
 
 
@@ -97,6 +194,8 @@ result = plo_var('dhrs','el',frames_per_page=1)
 ##### Notes ############################################
 #
 # Elevation of Uranus in between 37 and 42 deg.
+# 3C84 in between 60-70 deg
+# The gain calibrators were observed in between 20-85 deg
 #
 ########################################################
 
@@ -123,6 +222,13 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "2270" and "int" lt "2458" ')
 flag,/flag
 
+# antenna1 phase jump
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "1" ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "677" and "int" lt "727" ')
+flag,/flag
+
 
 # high noise
 select, /p, /reset, sideband='l'
@@ -139,6 +245,18 @@ flag,/flag
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "2216" and "int" lt "2458" ')
+flag,/flag
+
+
+# flag the data in the beginning because the gain calibrator 0418+380 has noisy phase
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" lt "554" and "int" gt "400" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "2162" and "int" lt "2458" ')
 flag,/flag
 
 
@@ -179,7 +297,7 @@ pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16, refant=1
 # all no
 # 3c84 yes
 
-select, /p, /reset, band=['c1','s3','s4','s5','s6']
+select, /p, /reset, band=['c1','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 
 # re-inspect passband splikes
@@ -285,16 +403,30 @@ gain_cal, cal_type='pha', /connect, /non_point, tel_bsl='telescope', refant=2
 # 3c84 yes 1
 # Uranus yes 1
 
+select,/p,/reset
+mir_save, 'ChiaYing_track1.flux.mir'
+
+# flag noisy data
+select, /p, /reset, sideband='l', source=['3c84','0510+180','0418+380']
+result=dat_filter(s_f, ' "int" gt "1658"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flag,/flag
+
+
 select, /p, /reset, band='c1', sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, cal_type='amp', x='hours', tel_bsl='telescope', refant=2
+gain_cal, cal_type='amp', x='hours', tel_bsl='telescope', refant=2, smoothing=10, /preavg
 # all no
-# 0510+180 yes 1.276306
+# 3c84 yes 8.584
 
-mir_save, 'ChiaYing_track1.flux.mir'
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f, ' "blcd" like "4" or "blcd" like "7" or "blcd" like "8" ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "6" ')
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 flag,/flag
 
@@ -326,6 +458,9 @@ Vector average:
 ## Notes #################################################################
 
 # apply :
+# Use the absolute flux of 3C84 extrapolated from the 2021-Nov-23 measurements
+# on the SMA calibrator list for absolute flux scaling.
+
 
 # RX 240
 #   LSB
@@ -388,17 +523,6 @@ gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=2, /
 select, /p, /reset, sideband='l', source=['0418+380','0510+180']
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_continuum, x='int'
-
-# flag the data in the beginning because the gain calibrator 0418+380 has noisy phase
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" lt "554" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "2162" and "int" lt "2458" ')
-flag,/flag
 
 
 select,/p,/reset
