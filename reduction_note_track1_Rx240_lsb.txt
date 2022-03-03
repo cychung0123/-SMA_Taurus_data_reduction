@@ -150,6 +150,13 @@ plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='
 select, /p, /reset, sideband='l', band='s2', source=['3c84']
 uti_chanfix, sample=1, channel=152
 
+select, /p, /reset, sideband='l', band='s3', source=['3c84']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sideband='l', band='s3'
+uti_chanfix, sample=1, channel=83
+
 select, /p, /reset, sideband='l', band='s4', source=['3c84']
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
@@ -239,24 +246,28 @@ flag,/flag
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f, '"blcd" like "4" or "blcd" like "7" or "blcd" like "8" ')
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "2162" and "int" lt "2458" ')
+result=dat_filter(s_f, '"int" gt "2123"')
 flag,/flag
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "2216" and "int" lt "2458" ')
+result=dat_filter(s_f, '"int" gt "2216"')
 flag,/flag
 
+select, /p, /reset, source=['0510+180','0418+380','Haro_6-39'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "4"  or "blcd" like "8" ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1890" and "int" lt "1945"')
+flag,/flag
 
 # flag the data in the beginning because the gain calibrator 0418+380 has noisy phase
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" lt "554" and "int" gt "400" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "2162" and "int" lt "2458" ')
 flag,/flag
 
 
@@ -279,6 +290,11 @@ select,/p,/reset
 apply_tsys
 plot_continuum, x='int'
 
+select, /p, /reset, source=['0510+180','0418+380'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+select, /p, /reset
 mir_save, 'ChiaYing_track1.tsys.mir'
 
 ## Notes #################################################################
@@ -407,7 +423,7 @@ select,/p,/reset
 mir_save, 'ChiaYing_track1.flux.mir'
 
 # flag noisy data
-select, /p, /reset, sideband='l', source=['3c84','0510+180','0418+380']
+select, /p, /reset, sideband='l', source=['3c84']
 result=dat_filter(s_f, ' "int" gt "1658"  ')
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 flag,/flag
@@ -417,7 +433,7 @@ select, /p, /reset, band='c1', sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 gain_cal, cal_type='amp', x='hours', tel_bsl='telescope', refant=2, smoothing=10, /preavg
 # all no
-# 3c84 yes 8.584
+# 3c84 yes 8.987
 
 
 select, /p, /reset, sideband='l'
@@ -436,23 +452,21 @@ result=dat_filter(s_f, ' "el" gt "40" and "el" lt "70"' )
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 flux_measure
 
-Scalar Average or Vector Average ? [S <V>]: 
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac            259    9.0335      38      4.49      9.0169     -0.3431
-    Uranus             21   33.7687      15      5.20     33.6818     -0.9576
-  0418+380             60    1.2264     118     10.36      1.2246     -0.0055
-      3c84             96    9.8346     169      9.36      9.8334     -0.0279
-  0510+180      g      60    1.2693     175     11.15      1.2677     -0.0094
+     bllac            260    5.7071     288      4.49      5.7051     -0.0390
+    Uranus             21   27.7732      42      5.20     27.7437     -0.2161
+  0418+380             60    1.1449     148     10.36      1.1427     -0.0133
+      3c84      g      84    9.1228     565      9.35      9.1223     -0.0613
+  0510+180             60    1.1810     129     11.15      1.1788     -0.0096
 
-Scalar Average or Vector Average ? [S <V>]: V
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac            259    9.0234      39      4.49      9.0169     -0.3431
-    Uranus             21   33.6954      15      5.20     33.6818     -0.9576
-  0418+380             60    1.2246     117     10.36      1.2246     -0.0055
-      3c84             96    9.8334     169      9.36      9.8334     -0.0279
-  0510+180      g      60    1.2677     174     11.15      1.2677     -0.0094
+     bllac            260    5.7052     287      4.49      5.7051     -0.0390
+    Uranus             21   27.7446      41      5.20     27.7437     -0.2161
+  0418+380             60    1.1428     147     10.36      1.1427     -0.0133
+      3c84      g      84    9.1225     564      9.35      9.1223     -0.0613
+  0510+180             60    1.1788     129     11.15      1.1788     -0.0096
 
 
 ## Notes #################################################################
@@ -464,9 +478,8 @@ Vector average:
 
 # RX 240
 #   LSB
-#   0418+380 yes 1.2246
-#   0510+180 yes 1.2677
-#   3c84 yes 9.8334
+#   0418+380 yes 1.1428
+#   0510+180 yes 1.1788
 
 # Flag 3c84 after the absolute flux calibration
 
@@ -485,27 +498,24 @@ plot_continuum, x = 'int'
 
 select, /p, /reset, sou='3c84', sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "600"')
-flag,/flag
-# I didn't flag the first 2 scans because they are used to calibrate the data that should be calibrated by 0418+380. The 3c84 is more suitable than 0510+180 because the elevation is closer to 0418+380. 
-# the elevation of 3c84 after 9:00 is descending, so it's not chose to calibrate the data
-
-# flag the first 2 scans of 3c84 and the sources between
-select, /p, /reset, sou='3c84', sideband='l'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" lt "600"')
 flag,/flag
 
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "505" and "int" lt "554" ')
-flag,/flag
-
-# flag phase jump in antenna 4
+# flag phase jump
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f, '"blcd" like "4" ')
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "1890" and "int" lt "1945"')
+result=dat_filter(s_f, '"int" gt "559" and "int" lt "614"')
+flag,/flag
+
+# flag sources between different calibrators
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1337" and "int" lt "1385" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1506" and "int" lt "1555" ')
 flag,/flag
 
 select, /p, /reset, sideband='l'
@@ -513,9 +523,8 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='baseline', refant=2, /preavg, /connect
 # apply :
   all no
-#   0418+380 yes 1.2246
-#   0510+180 yes 1.2677
-#   3c84 yes 9.8334
+#   0418+380 yes 1.1428
+#   0510+180 yes 1.1788
 
 gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=2, /preavg
 
