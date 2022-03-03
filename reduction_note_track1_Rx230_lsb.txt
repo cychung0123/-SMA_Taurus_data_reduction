@@ -9,7 +9,98 @@
 
 # load raw data
 readdata, dir='SMA2021BA003_track3'
-# There is no Tsys of antenna 1, flag it. 
+# There is no Tsys of antenna 1, replace Tsys.
+
+
+
+
+select,baseline='2-4',/reset
+t1=sp[psf].tssb
+select,baseline='2-5',/reset
+t2=sp[psf].tssb
+select,baseline='2-6',/reset
+t3=sp[psf].tssb
+select,baseline='2-7',/reset
+t4=sp[psf].tssb
+select,baseline='2-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-2',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-4',/reset
+t1=sp[psf].tssb
+select,baseline='4-5',/reset
+t2=sp[psf].tssb
+select,baseline='4-6',/reset
+t3=sp[psf].tssb
+select,baseline='4-7',/reset
+t4=sp[psf].tssb
+select,baseline='4-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-4',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-5',/reset
+t1=sp[psf].tssb
+select,baseline='4-5',/reset
+t2=sp[psf].tssb
+select,baseline='5-6',/reset
+t3=sp[psf].tssb
+select,baseline='5-7',/reset
+t4=sp[psf].tssb
+select,baseline='5-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-5',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-6',/reset
+t1=sp[psf].tssb
+select,baseline='4-6',/reset
+t2=sp[psf].tssb
+select,baseline='5-6',/reset
+t3=sp[psf].tssb
+select,baseline='6-7',/reset
+t4=sp[psf].tssb
+select,baseline='6-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-6',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-7',/reset
+t1=sp[psf].tssb
+select,baseline='4-7',/reset
+t2=sp[psf].tssb
+select,baseline='5-7',/reset
+t3=sp[psf].tssb
+select,baseline='6-7',/reset
+t4=sp[psf].tssb
+select,baseline='7-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-7',/reset
+sp[psf].tssb=tavg
+
+select,baseline='2-8',/reset
+t1=sp[psf].tssb
+select,baseline='4-8',/reset
+t2=sp[psf].tssb
+select,baseline='5-8',/reset
+t3=sp[psf].tssb
+select,baseline='6-8',/reset
+t4=sp[psf].tssb
+select,baseline='7-8',/reset
+t5=sp[psf].tssb
+tavg = (t1 + t2 + t3 + t4 + t5) / 5.0
+select,baseline='1-8',/reset
+sp[psf].tssb=tavg
+
+
+
+
 
 # check the spectra to find the channel range to generate continuum
 select, /p, /reset, sideband='l', source=['3c84']
@@ -44,7 +135,6 @@ select, /p, /reset, sideband='l', source=['3c84']
 result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
-
 # remove spikes
 select, /p, /reset, sideband='l', band='s1', source=['3c84']
 result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
@@ -57,7 +147,7 @@ select, /p, /reset, sideband='l', band='s5', source=['3c84']
 result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
-select, /p, /reset, sideband='l', band='s5'
+select, /p, /reset, sideband='l', band='s5', source=['3c84']
 uti_chanfix, sample=1, channel=616
 
 # regenerate continuum
@@ -65,11 +155,6 @@ select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
 uti_avgband, swmch1=60, swmch2=964
 plot_continuum, x='int'
 # check the data was flagged correctly
-
-# flag antenna 1
-select, /p, /reset
-result=dat_filter(s_f, '"blcd" like "1"  ')
-flag,/flag
 
 # save MIR format data
 select, /p, /reset
@@ -151,7 +236,7 @@ flag,/flag
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f, '"blcd" like "8" ')
 result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "440" and "int" lt "564"')
+result=dat_filter(s_f, '"int" gt "440" and "int" lt "554"')
 flag,/flag
 
 
@@ -159,6 +244,7 @@ flag,/flag
 select, /p, /reset
 plot_continuum, x = 'int'
 
+select, /p, /reset
 mir_save, 'ChiaYing_track1.flag.mir'
 
 
@@ -196,7 +282,7 @@ pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16, refant=1
 # all no
 # 3c84 yes
 
-select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 
 # re-inspect passband splikes
@@ -293,13 +379,29 @@ gain_cal, cal_type='pha', /connect, /non_point, tel_bsl='telescope', refant=2
 # 3c84 yes 1
 # Uranus yes 1
 
+# flag noisy data
+select, /p, /reset, sideband='l', source=['3c84']
+result=dat_filter(s_f, ' "int" gt "1658"  ')
+result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
+flag,/flag
+
 select, /p, /reset, band='c1', sideband='l'
 result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
-gain_cal, cal_type='amp', x='hours', tel_bsl='telescope', refant=2
+gain_cal, cal_type='amp', x='hours', tel_bsl='telescope', refant=2, smoothing=10, /preavg
 # all no
-# 0510+180 yes 1.353669
+# 3c84 yes 9.999
 
 mir_save, 'ChiaYing_track1.flux.mir'
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "4" or "blcd" like "7" or "blcd" like "8" ')
+result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "6" ')
+result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
+flag,/flag
 
 select, /p, /reset, band='c1', sideband='l', source=['3c84','0418+380','0510+180','Uranus', 'bllac']
 result=dat_filter(s_f, ' "el" gt "40" and "el" lt "70"' )
@@ -308,19 +410,19 @@ flux_measure
 
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac            259   46.4569      16      4.49     46.4315     -0.1525
-    Uranus             21   26.8823      33      5.20     26.7967      0.0665
-  0418+380             60    1.1946     307     10.36      1.1936     -0.0018
-      3c84             96    9.7783     437      9.47      9.7778     -0.0011
-  0510+180      g      60    1.3897     432     11.00      1.3889      0.0008
+     bllac            260    5.8023     381      4.49      5.8011     -0.0415
+    Uranus             21   24.5070      57      5.20     24.4944     -0.1914
+  0418+380             60    1.2349     207     10.36      1.2335     -0.0084
+      3c84      g      90   10.0791     684      9.13     10.0785     -0.0612
+  0510+180             60    1.4430     195     11.15      1.4417     -0.0078
 
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac            259   46.4317      16      4.49     46.4315     -0.1525
-    Uranus             21   26.7968      33      5.20     26.7967      0.0665
-  0418+380             60    1.1936     306     10.36      1.1936     -0.0018
-      3c84             96    9.7778     437      9.47      9.7778     -0.0011
-  0510+180      g      60    1.3889     431     11.00      1.3889      0.0008
+     bllac            260    5.8012     380      4.49      5.8011     -0.0415
+    Uranus             21   24.4952      57      5.20     24.4944     -0.1914
+  0418+380             60    1.2335     206     10.36      1.2335     -0.0084
+      3c84      g      90   10.0787     684      9.13     10.0785     -0.0612
+  0510+180             60    1.4417     195     11.15      1.4417     -0.0078
 
 
 ## Notes #################################################################
@@ -329,9 +431,8 @@ Vector average:
 
 # RX 240
 #   LSB
-#   0418+380 yes 1.1936
-#   0510+180 yes 1.3889
-#   3c84 yes 9.7778
+#   0418+380 yes 1.2335
+#   0510+180 yes 1.4417
 
 # Flag 3c84 after the absolute flux calibration
 
@@ -379,8 +480,8 @@ result=dat_filter(s_f,' "rec" eq "230" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='baseline', refant=2, /preavg, /connect
 # apply :
   all no
-#   0418+380 yes 1.1936
-#   0510+180 yes 1.3889
+#   0418+380 yes 1.2335
+#   0510+180 yes 1.4417
 
 gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=2, /preavg
 
