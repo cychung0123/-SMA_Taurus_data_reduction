@@ -1,0 +1,486 @@
+##### Software ###########################################################
+
+# (Data reduction in RTDC 5)
+linux> source /home/hlu/software/MIR/mir/setup
+IDL> device, decomposed=0, retain=2
+
+# CF Jupiter
+#linux> source /sma/miriad/linux/miriad_start.csh
+
+# RTDC5
+# Miriad for 4GHz sideband (smaflux does not work)
+linux> source /opt/mir/linux/miriad_start.csh
+
+# Miriad for 2GHz sideband 
+# linux> source /opt/miriad/miriad_cvs/miriad.csh
+
+# ASIAA
+# linux> source /home/hyliu/softwares/astro_reduction/MIR/sma-mir/setup.bsh
+# IDL> device, decomposed=0, retain=2
+##########################################################################
+
+
+
+
+
+
+##### ssh from d20 then to hilodr3 for data loading ####
+
+# ssh to rtdchilo2
+ssh hyliu@128.171.166.99
+# then from d2o ssh to hilodr3
+ssh hyliu@128.171.166.108
+
+# leaves data in
+# /sma/reduction/hyliu/
+
+########################################################
+
+
+
+
+##### Read Data in MIR IDL ###############################################
+
+# science data (PWV: 0.05~0.06)
+# /data/science/mir_data/210903_10:43:29/
+
+# rechunking data in Hawaii (2048 kHz channel width after binning, ~1.8 km/s @ 345 GHz)
+/application/bin/SMARechunker -i /data/science/mir_data/210903_10:43:29/ -o ./SMA2021AA010_track5 -r 16
+
+# load raw data
+readdata, dir='SMA2021AA010_track5'
+
+# re-generate continuum data by performing spectral averaging over the first 4 spectral windows
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+u!!!ti_avgband, swmch1=60, swmch2=964
+plot_continuum
+
+# examing the calibrator data
+select,/p,/reset,source=['0510+180','0418+380','3c84']
+plot_continuum
+
+
+# flag phase jump
+select,/p,/reset
+result=dat_filter(s_f, '"blcd" like "1"  ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1107" and "int" lt "1154" ')
+flag,/flag
+
+# check and remove spikes
+select, /p, /reset
+uti_checkspike,source='3c84',/baseline,ntrim=60, threshold=5, /fix, sample=1
+
+# regenerate continuum
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+select,/p,/reset, source=['0510+180','0418+380','3c84']
+plot_continuum
+
+
+# save MIR format data
+select, /p, /reset
+mir_save, 'ChiaYing_track5.mir', /new
+
+# inspect spectra
+plot_spectra,x_var='fsky',y_vars='amp,pha', frame_vars='blcd', color_vars='band',frames_per_page=4
+plot_spectra,x_var='channel',y_vars='amp,pha', frame_vars='blcd', color_vars='band',frames_per_page=4
+
+# sma_dat_merge (not necessary)
+
+### Notes ################################################################
+
+#
+# Calibrating the RX400 LSB as an example.
+# Will walk Chia-Ying through calibrating RX400 LSB.
+# Expect Chia-Ying to calibrate RX345 and RX400 USB.
+#
+
+# passband: 3c84
+# source  : 
+# Flux    : Neptune
+# gain    : 0510+180, 0418+380, 3c84
+
+# (tau_225 GHz: 0.05~0.06) throughout the night
+#
+# S6 of RX400-LSB and S5+S6 of RX400-USB present high noise (maybe due to IF response and
+# atmospheric transmission)
+# Antenna 7 and 8 are not doing well with the 400 GHz tuning
+#
+##########################################################################
+
+
+
+
+
+##### Baseline Correction ################################################
+# IDL> select,/p,/reset
+# IDL> sma_cal_bas
+
+## Notes #################################################################
+# 
+# This step is not needed.
+#    
+#     # Example steps to correct antenna files
+#     Enter the current ANTENNAS file: ./120520_07:02:06/antennas
+#     Enter the new ANTENNAS file: ./ant_tab/antennas
+#
+##########################################################################
+
+
+
+
+
+##### Inspect elevation ################################
+
+result = plo_var('dhrs','el',frames_per_page=1)
+
+##### Notes ############################################
+#
+# Elevation of Neptune in between 60 and 70 deg.
+#
+########################################################
+
+
+
+
+##### Initial Data Insepction ############################################
+
+select, /p, /reset, source=['0510+180','0418+380','3c84','CoKu_Tau_1'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum
+plot_continuum, preavg, frames_p=4, y='amp'
+plot_continuum, frames_p=4, y='pha'
+
+select, /p, /reset
+
+## Notes #################################################################
+# 
+# 1. ipoint:
+#
+#
+# 2. Reference antenna: 1
+#
+##########################################################################
+
+
+
+
+##### Flag the ipoint Data and Strange data ##############################
+
+
+# flag scans to keep only the desired gain phase calibration
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1215" and "int" lt "1222" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1474" and "int" lt "1482" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1644" and "int" lt "1661" ')
+flag,/flag
+
+
+# phase jump
+select,/p,/reset
+result=dat_filter(s_f, '"blcd" like "7"  ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1644" and "int" lt "1692" ')
+flag,/flag
+
+select,/p,/reset
+result=dat_filter(s_f, '"blcd" like "8"  ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1474" and "int" lt "1528" ')
+flag,/flag
+
+# high noise
+select, /p, /reset, source=['0510+180','0418+380','3c84','CoKu_Tau_1'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"blcd" like "7"  ')
+plot_continuum
+select, /p, /reset, source=['0510+180','0418+380','3c84','CoKu_Tau_1'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"blcd" like "8"  ')
+plot_continuum
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "8" and "blcd" like "7" ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1474" and "int" lt "1769" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "8" or "blcd" like "7" ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1644" and "int" lt "1769" ')
+flag,/flag
+
+
+select, /p, /reset
+plot_continuum
+
+mir_save, 'ChiaYing_track5.flag.mir'
+
+
+## Notes #################################################################
+
+# Data quality is good
+# 0510+180 is faint at 400 GHz likely due to a steep spectral index
+
+##########################################################################
+
+
+
+
+
+#### Tsys Correction  ####################################################
+
+# inspect Tsys
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+
+select,/p,/reset
+apply_tsys
+plot_continuum, x='int'
+
+mir_save, 'ChiaYing_track5.tsys.mir'
+
+## Notes #################################################################
+#
+# Except for ant 7 and 8 
+#    345 GHz: Tsys is 500-600 K in the target loope
+#    400 GHz: Tsys is 800-1200 K in the target loop
+#
+# For the 400 GHz IF, the Tsys of ant 7 is 1600-2400 K,
+#                     and the Tsys of ant8 is 1000-1500 K
+#
+##########################################################################
+
+
+
+
+#### Passband Calibration ################################################
+
+select, /p, /reset
+result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16,refant=1
+# 3c84 yes 
+
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+
+# re-inspect passband splikes
+# select, /p,/reset,sou='3c84', sideband='l'
+# result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+# plot_spectra,x_var='channel',y_vars='amp,pha', frame_vars='blcd', color_vars='band',frames_per_page=4
+
+select, /p, /reset
+result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16,refant=1
+
+select, /p, /reset
+mir_save, 'ChiaYing_track5.tsys.bp.mir'
+
+## Notes #################################################################
+# 1. Data should be ok.
+
+# http://sma1.sma.hawaii.edu/planetvis.html
+# Neptune: 34  Jy @ 400 GHz
+
+# http://sma1.sma.hawaii.edu/callist/callist.html
+# J0510+180
+ 850   16 Feb 2016 08:51   SMA       346.95   3.274 +/-  0.168    mgurwell  
+ 850   22 Jan 2017 11:03   SMA       351.36   2.160 +/-  0.118    mgurwell  
+
+# 0418+380
+ 850   29 Jun 2021 19:15   SMA       350.21   1.242 +/-  0.086    mgurwell  
+ 850   08 Jul 2021 18:15   SMA       346.02   1.163 +/-  0.070    mgurwell 
+
+# 3c84
+ 850   29 Jun 2021 18:38   SMA       350.21   6.503 +/-  0.328    mgurwell  
+ 850   08 Jul 2021 17:45   SMA       346.02   6.376 +/-  0.320    mgurwell  
+ 850   13 Aug 2021 16:34   SMA       346.28   5.648 +/-  0.283    mgurwell  
+
+# in CASA
+# https://casaguides.nrao.edu/index.php/Analysis_Utilities
+aupath = '/home/hyliu/softwares/casaAU/analysis_scripts/'
+import sys
+sys.path.append(aupath)
+import analysisUtils as aU
+es = aU.stuffForScienceDataReduction()
+
+aU.getALMAFlux('J0319+4130', '400GHz', lowband=3, highband=7, date='20210903')
+  Closest Band 3 measurement: 14.390 +- 0.250 (age=+1 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 15.850 +- 0.270 (age=+1 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 6.050 +- 0.120 (age=+0 days) 343.5 GHz 
+number of measurements used in low/high bands = 2 / 1
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age +0.5 days from 20210903, with age separation of 1 days
+  20210902 -- 20210903: freqs=[103.5, 91.47, 343.48], fluxes=[14.39, 15.85, 6.05], errors=[0.25, 0.27, 0.12]
+Median Monte-Carlo result for 400.000000 = 5.414841 +- 0.120690 (scaled MAD = 0.121447)
+Result using spectral index of -0.725804 for 400.000 GHz from 15.120 Jy at 97.485 GHz = 5.426816 +- 0.120690 Jy
+
+
+aU.getALMAFlux('J0510+1800', '400GHz', lowband=3, highband=7, date='20210903')
+  Closest Band 3 measurement: 1.850 +- 0.040 (age=+1 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.990 +- 0.040 (age=+1 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.990 +- 0.040 (age=+0 days) 343.5 GHz 
+number of measurements used in low/high bands = 2 / 1
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age +0.5 days from 20210903, with age separation of 1 days
+  20210902 -- 20210903: freqs=[103.5, 91.47, 343.48], fluxes=[1.85, 1.99, 0.99], errors=[0.04, 0.04, 0.04]
+Median Monte-Carlo result for 400.000000 = 0.912341 +- 0.040843 (scaled MAD = 0.041153)
+Result using spectral index of -0.526143 for 400.000 GHz from 1.920 Jy at 97.485 GHz = 0.913506 +- 0.040843 Jy
+
+
+aU.getALMAFlux('J0418+3801', '400GHz', lowband=3, highband=7, date='20210903')
+  Closest Band 3 measurement: 1.206 +- 0.060 (age=+209 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.692 +- 0.035 (age=+749 days) 343.5 GHz 
+number of measurements used in low/high bands = 1 / 1
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age +749.0 days from 20210903, with age separation of 0 days
+  20190816: freqs=[103.5, 91.5, 343.5], fluxes=[1.034, 1.095, 0.692], errors=[0.052, 0.055, 0.035]
+Median Monte-Carlo result for 400.000000 = 0.655967 +- 0.037025 (scaled MAD = 0.036862)
+Result using spectral index of -0.342042 for 400.000 GHz from 1.206 Jy at 91.500 GHz = 0.728152 +- 0.037025 Jy
+WARNING: the mean time separation between the target date and the flux monitoring observations is 209 days
+
+##########################################################################
+
+
+
+
+#### Measure the Absolute Flux ###########################################
+
+
+# RX400
+
+
+# -- LSB
+# mir_restore, 'ChiaYing_track5.tsys.bp.mir'
+
+select, /p, /reset, band='c1', sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, cal_type='pha',/connect,/non_point,tel_bsl='telescope',refant=1
+# all no
+# 0510+180 yes 1
+# 0418+380 yes 1
+# 3c84 yes 1
+# Neptune yes 1
+
+select, /p, /reset, band='c1', sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal,cal_type='amp',x='hours',poly=0,tel_bsl='telescope',refant=1,/preavg,/non_point
+# all no
+# Neptune yes 34.4
+
+select, /p, /reset,band='c1', sideband='l', source=['3c84','0418+380','0510+180','Neptune']
+result=dat_filter(s_f, ' "el" gt "60" and "el" lt "70"' )
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+flux_measure
+
+Scalar Average or Vector Average ? [S <V>]: S
+Scalar average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+   Neptune      g      30   22.0706      59     10.82     22.0651     -0.0110
+      3c84             24    5.6809     138     15.14      5.6670     -0.0080
+  0418+380             16    1.2405      53     14.36      1.1949      0.0175
+  0510+180             39    0.9526      67     16.74      0.8469      0.0045
+
+Scalar Average or Vector Average ? [S <V>]: V
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+   Neptune      g      30   22.0651      59     10.82     22.0651     -0.0110
+      3c84             24    5.6670     137     15.14      5.6670     -0.0080
+  0418+380             16    1.1951      50     14.36      1.1949      0.0175
+  0510+180             39    0.8469      53     16.74      0.8469      0.0045
+
+# without /preavg in amp cal
+# gain_cal,cal_type='amp',x='hours',poly=0,tel_bsl='telescope',refant=1,/non_point
+
+Scalar Average or Vector Average ? [S <V>]: S
+Scalar average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+   Neptune      g      30   22.0705      59     10.82     22.0655     -0.0194
+      3c84             24    5.7093     141     15.14      5.6972     -0.0067
+  0418+380             16    1.2249      58     14.36      1.1818      0.0132
+  0510+180             39    0.9372      70     16.74      0.8531      0.0022
+
+Scalar Average or Vector Average ? [S <V>]: V
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+   Neptune      g      30   22.0655      59     10.82     22.0655     -0.0194
+      3c84             24    5.6973     141     15.14      5.6972     -0.0067
+  0418+380             16    1.1819      54     14.36      1.1818      0.0132
+  0510+180             39    0.8531      58     16.74      0.8531      0.0022
+
+
+## Notes #################################################################
+
+# apply : 
+          
+# RX 400
+#   LSB
+#   0418+380 yes 1.1951
+#   0510+180 yes 0.8469
+#   3c84     yes 5.6670
+
+##########################################################################
+
+
+
+
+#### Gain Calibration and Miriad Files Output ############################
+# IDL> device, decomposed=0, retain=2
+# IDL> .compile idl2miriad
+
+
+# RX400, LSB
+mir_restore, 'ChiaYing_track5.tsys.bp.mir'
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', smoothing=0.1,tel_bsl='baseline', refant=1
+# apply :
+  all no
+# 0418+380 yes 1.1951
+# 0510+180 yes 0.8469
+# 3c84     yes 5.6670
+
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=1, /preavg
+
+
+select, /p, /reset, sideband='l', source=['0418+380','0510+180','3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum
+
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+mir_save, 'ChiaYing_track5.rx400.lsb.cal.mir', /new
+
+idl2miriad, dir='IP_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='IP_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='IQ_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='IQ_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+## Notes #################################################################
+#
+# Antenna based gain phase solution didn't work well for RX400-LSB, ant. 5, 7, and 8
+# Amplitude solution suspicious. This might be related to how Tsys was implemented.
+#
+# Miriad is not happy with the new data format.
+# running uvlin will remove tsys.
+# For the purpose of continuum studies, the work around is to flag the spectral lines and then image the calibrated data
+# using "options='systemp,mfs,double'
+#
+# If we really want spectral lines, the work around may be splitting individual spectral windows.
+# 
+##########################################################################
+

@@ -1,0 +1,314 @@
+#### Software ###########################################################
+# on carbon
+# linux> source /home/cychung/software/sma-mir/setup.bsh
+# IDL> device, decomposed=0, retain=2
+# to add color
+##########################################################################
+
+
+
+
+##### Read Data in MIR IDL ###############################################
+
+# load raw data
+readdata, dir='SMA2021AA010_track5'
+
+# check the spectra to find the channel range to generate continuum
+select, /p, /reset, source=['3c84']
+plot_spectra, color_var ='band'
+
+# re-generate continuum data by performing spectral averaging over the first 4 spectral windows
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+plot_continuum
+# antenna 1 and antenna 5
+
+# examing the calibrator data
+select, /p, /reset, source=['0510+180','0418+380','3c84']
+plot_continuum, x='int'
+
+# flag phase jump
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"blcd" like "1"')
+result=dat_filter(s_f, '"int" gt "1107" and "int" lt "1154"')
+flag,/flag
+# antenna 5 '"int" gt "1274" and "int" lt "1769"'
+
+# check and remove spikes
+select, /p, /reset
+uti_checkspike, source='3c84', /baseline, threshold=5, /fix, sample=1
+# Spike found in RX 345, Sideband L, Band s2, Baseline 6-7,Channel 727
+# Spike found in RX 400, Sideband U, Band s5, Baseline 4-8,Channel 569
+
+# inspect spectra
+select, /p, /reset, sideband='u', source=['3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+# regenerate continuum
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+plot_continuum, x='int'
+# check the data was flagged correctly
+
+# examing the calibrator data again
+select, /p, /reset, source=['0510+180','0418+380','3c84']
+plot_continuum, x='int'
+
+# save MIR format data
+select, /p, /reset
+mir_save, 'ChiaYing_track5.mir', /new
+
+
+
+### Notes ################################################################
+
+#
+# Calibrating the RX400 USB
+#
+
+# passband: 3c84
+# source  :
+# Flux    : Neptune
+# gain    : 0510+180, 0418+380, 3c84
+
+# (tau_225 GHz: 0.05~0.06) throughout the night
+#
+##########################################################################
+
+
+##### Inspect elevation ################################
+
+result = plo_var('dhrs','el',frames_per_page=1)
+
+##### Notes ############################################
+#
+# Elevation of Neptune in between 60 and 70 deg.
+#
+########################################################
+
+
+##### Initial Data Insepction ############################################
+
+select, /p, /reset, source=['0510+180','0418+380','3c84','Haro_6-39'], sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+
+##### Flag the ipoint Data and Strange data ##############################
+
+# flag scans to keep only the desired gain phase calibration
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1215" and "int" lt "1222" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1474" and "int" lt "1482" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1644" and "int" lt "1661" ')
+flag,/flag
+
+# phase jump
+# cannot identify
+
+# high noise
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "239" and "int" lt "244" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1644" ')
+flag,/flag
+
+# check the continuum again
+select, /p, /reset
+plot_continuum, x = 'int'
+
+select, /p, /reset
+mir_save, 'ChiaYing_track5.flag.mir'
+
+
+
+#### Tsys Correction  ####################################################
+
+# inspect Tsys
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+select,/p,/reset
+apply_tsys
+plot_continuum, x='int'
+
+select, /p, /reset, source=['3c84','0510+180','0418+380'], sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+
+select,/p,/reset
+mir_save, 'ChiaYing_track5.tsys.mir'
+
+## Notes #################################################################
+# Except for ant 7 and 8
+#    345 GHz: Tsys is 500-600 K in the target loope
+#    400 GHz: Tsys is 800-1200 K in the target loop
+# baseline with ant 7 has > 1500 K Tsys
+# baseline ant 7 - ant 8 has > 2000 K Tsys
+#
+#########################################################################
+
+
+
+#### Passband Calibration ################################################
+
+select, /p, /reset
+result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16,refant=1
+# 3c84 yes
+
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+
+# re-inspect passband splikes
+select, /p, /reset, sou='3c84', sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset
+result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16, refant=1
+
+select, /p, /reset
+mir_save, 'ChiaYing_track5.tsys.bp.mir'
+
+
+## Notes #################################################################
+
+# http://sma1.sma.hawaii.edu/planetvis.html
+# Neptune: 35  Jy @ 410 GHz
+
+
+# http://sma1.sma.hawaii.edu/callist/callist.html
+# J0510+180
+ 850   16 Feb 2016 08:51   SMA       346.95   3.274 +/-  0.168    mgurwell
+ 850   22 Jan 2017 11:03   SMA       351.36   2.160 +/-  0.118    mgurwell
+
+# 0418+380
+ 850   29 Jun 2021 19:15   SMA       350.21   1.242 +/-  0.086    mgurwell
+ 850   08 Jul 2021 18:15   SMA       346.02   1.163 +/-  0.070    mgurwell
+ 850   16 Oct 2021 13:23   SMA       349.85   1.077 +/-  0.060    mgurwell
+ 850   23 Nov 2021 10:48   SMA       340.98   1.017 +/-  0.052    mgurwell
+
+# 3c84
+ 850   29 Jun 2021 18:38   SMA       350.21   6.503 +/-  0.328    mgurwell
+ 850   08 Jul 2021 17:45   SMA       346.02   6.376 +/-  0.320    mgurwell
+ 850   13 Aug 2021 16:34   SMA       346.28   5.648 +/-  0.283    mgurwell
+ 850   16 Oct 2021 14:36   SMA       349.85   7.501 +/-  0.375    mgurwell
+ 850   23 Nov 2021 09:43   SMA       340.98   6.765 +/-  0.338    mgurwell
+##########################################################################
+
+
+
+#### Measure the Absolute Flux ###########################################
+
+select, /p, /reset, band='c1', sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, cal_type='pha', /connect, /non_point, tel_bsl='telescope', refant=1, /loose
+# all no
+# 0510+180 yes 1
+# 0418+380 yes 1
+# 3c84 yes 1
+# Neptune yes 1
+
+select, /p, /reset, band='c1', sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, cal_type='amp', x='hours', poly=0, tel_bsl='telescope', refant=1, /preavg, /non_point, /loose
+# all no
+# Neptune yes 35
+
+select, /p, /reset, band='c1', sideband='u', source=['3c84','0418+380','0510+180','Neptune']
+result=dat_filter(s_f, ' "el" gt "60" and "el" lt "70"' )
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+flux_measure
+
+Scalar average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+   Neptune      g      30   23.5473      34     10.82     23.5404     -0.0631
+      3c84             24    5.6864      84     15.14      5.6787     -0.0155
+  0418+380             16    1.2456      38     14.36      1.1905      0.0283
+  0510+180             39    0.9333      42     16.74      0.8518     -0.0022
+
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+   Neptune      g      30   23.5405      34     10.82     23.5404     -0.0631
+      3c84             24    5.6787      84     15.14      5.6787     -0.0155
+  0418+380             16    1.1908      35     14.36      1.1905      0.0283
+  0510+180             39    0.8518      35     16.74      0.8518     -0.0022
+
+
+## Notes #################################################################
+
+# apply :
+
+# RX 400
+#   USB
+#   0418+380 yes 1.1908
+#   0510+180 yes 0.8518
+#   3c84     yes 5.6787
+
+##########################################################################
+
+#### Gain Calibration and Miriad Files Output ############################
+
+mir_restore, 'ChiaYing_track5.tsys.bp.mir'
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='baseline', refant=1
+# apply :
+  all no
+#   0418+380 yes 1.1908
+#   0510+180 yes 0.8518
+#   3c84     yes 5.6787
+
+
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=1, /preavg, /loose
+
+# check gain calibrator again
+select, /p, /reset, sideband='u', source=['0418+380','0510+180','3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum
+# the 3c84 amplitude become fluctuating 
+
+
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+mir_save, 'ChiaYing_track5.rx400.usb.cal.mir', /new
+
+idl2miriad, dir='IP_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='IP_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='IQ_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='IQ_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='RY_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='RY_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='CY_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='CY_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='BP_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='BP_Tau',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='LkCa_15_track5.rx400.usb.cal.miriad',sideband='u',source='LkCa_15',band=['s1','s2','s3','s4','s5','s6']
+
+idl2miriad, dir='AB_Aur_track5.rx400.usb.cal.miriad',sideband='u',source='AB_Aur',band=['s1','s2','s3','s4','s5','s6']
+
