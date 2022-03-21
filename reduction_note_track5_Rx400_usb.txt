@@ -133,6 +133,43 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "1644" ')
 flag,/flag
 
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "249" and "int" lt "261" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "425" and "int" lt "434" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "727" and "int" lt "852" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1215" and "int" lt "1340" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "5"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1535" and "int" lt "1637" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "6"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "425" and "int" lt "434" ')
+flag,/flag
+
+
 # check the continuum again
 select, /p, /reset
 plot_continuum, x = 'int'
@@ -246,17 +283,17 @@ flux_measure
 
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   23.5473      34     10.82     23.5404     -0.0631
-      3c84             24    5.6864      84     15.14      5.6787     -0.0155
-  0418+380             16    1.2456      38     14.36      1.1905      0.0283
-  0510+180             39    0.9333      42     16.74      0.8518     -0.0022
+   Neptune      g      30   23.5473      34     10.82     23.5403     -0.0632
+      3c84             24    5.7217      85     15.14      5.7141     -0.0162
+  0418+380             16    1.2455      38     14.36      1.1904      0.0283
+  0510+180             39    0.9466      42     16.82      0.8693     -0.0035
 
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   23.5405      34     10.82     23.5404     -0.0631
-      3c84             24    5.6787      84     15.14      5.6787     -0.0155
-  0418+380             16    1.1908      35     14.36      1.1905      0.0283
-  0510+180             39    0.8518      35     16.74      0.8518     -0.0022
+   Neptune      g      30   23.5404      34     10.82     23.5403     -0.0632
+      3c84             24    5.7141      85     15.14      5.7141     -0.0162
+  0418+380             16    1.1908      35     14.36      1.1904      0.0283
+  0510+180             39    0.8693      36     16.82      0.8693     -0.0035
 
 
 ## Notes #################################################################
@@ -266,8 +303,8 @@ Vector average:
 # RX 400
 #   USB
 #   0418+380 yes 1.1908
-#   0510+180 yes 0.8518
-#   3c84     yes 5.6787
+#   0510+180 yes 0.8693
+#   3c84     yes 5.7141
 
 ##########################################################################
 
@@ -275,40 +312,79 @@ Vector average:
 
 mir_restore, 'ChiaYing_track5.tsys.bp.mir'
 
+select, /p, /reset, source=['0510+180','0418+380','3c84','Haro_6-39'], sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+# flag 3c84
+select, /p, /reset, sideband='u', sou=['3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" lt "600" ')
+flag,/flag
+
+# different calibrators
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='baseline', refant=1
+result=dat_filter(s_f, '"int" gt "1159" and "int" lt "1208" ')
+flag,/flag
+
+# first scan of 0510+180
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "371" and "int" lt "486" ')
+flag,/flag
+
+# noisy
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "2"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "493" and "int" lt "601" ')
+flag,/flag
+
+# phase jump
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "1" and "blcd" like "2"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "859" and "int" lt "908" ')
+flag,/flag
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='telescope', refant=1
 # apply :
   all no
 #   0418+380 yes 1.1908
-#   0510+180 yes 0.8518
-#   3c84     yes 5.6787
+#   0510+180 yes 0.8693
+#   3c84     yes 5.7141
 
+# Baobab-2022Mar15: Changed from baseline based gain phase solution to antenna based to enhance S/N.
+# Baobab-2022Mar15: Do we want all 3C84 scans in the solution?
 
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=1, /preavg, /loose
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',refant=1, /loose, smoothing=0.1, /preavg
 
 # check gain calibrator again
 select, /p, /reset, sideband='u', source=['0418+380','0510+180','3c84']
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 plot_continuum
-# the 3c84 amplitude become fluctuating 
+
+# Baobab-2022Mar22: At time ~13.5 hr, the phase of baselines 1-2, 1-5, 2-4, 2-5 are entirely decoherent.
 
 
 select,/p,/reset
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 mir_save, 'ChiaYing_track5.rx400.usb.cal.mir', /new
 
-idl2miriad, dir='IP_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='IP_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='IP_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='IP_Tau',band=['s1','s2','s3','s4']
 
-idl2miriad, dir='IQ_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='IQ_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='IQ_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='IQ_Tau',band=['s1','s2','s3','s4']
 
-idl2miriad, dir='RY_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='RY_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='RY_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='RY_Tau',band=['s1','s2','s3','s4']
 
-idl2miriad, dir='CY_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='CY_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='CY_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='CY_Tau',band=['s1','s2','s3','s4']
 
-idl2miriad, dir='BP_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='BP_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='BP_Tau_track5.rx400.usb.cal.miriad',sideband='u',source='BP_Tau',band=['s1','s2','s3','s4']
 
-idl2miriad, dir='LkCa_15_track5.rx400.usb.cal.miriad',sideband='u',source='LkCa_15',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='LkCa_15_track5.rx400.usb.cal.miriad',sideband='u',source='LkCa_15',band=['s1','s2','s3','s4']
 
-idl2miriad, dir='AB_Aur_track5.rx400.usb.cal.miriad',sideband='u',source='AB_Aur',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='AB_Aur_track5.rx400.usb.cal.miriad',sideband='u',source='AB_Aur',band=['s1','s2','s3','s4']
 
