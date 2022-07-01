@@ -3,56 +3,21 @@
 # (Data reduction in RTDC 5)
 linux> source /home/hlu/software/MIR/mir/setup
 IDL> device, decomposed=0, retain=2
-
-# CF Jupiter
-#linux> source /sma/miriad/linux/miriad_start.csh
-
-# RTDC5
-# Miriad for 4GHz sideband (smaflux does not work)
-linux> source /opt/mir/linux/miriad_start.csh
-
-# Miriad for 2GHz sideband 
-# linux> source /opt/miriad/miriad_cvs/miriad.csh
-
-# ASIAA
-# linux> source /home/hyliu/softwares/astro_reduction/MIR/sma-mir/setup.bsh
-# IDL> device, decomposed=0, retain=2
 ##########################################################################
-
-
-
-
-
-
-##### ssh from d20 then to hilodr3 for data loading ####
-
-# ssh to rtdchilo2
-ssh hyliu@128.171.166.99
-# then from d2o ssh to hilodr3
-ssh hyliu@128.171.166.108
-
-# leaves data in
-# /sma/reduction/hyliu/
-
-########################################################
 
 
 
 
 ##### Read Data in MIR IDL ###############################################
 
-# science data (PWV: 0.05~0.06)
-# /data/science/mir_data/210903_10:43:29/
-
-# rechunking data in Hawaii (2048 kHz channel width after binning, ~1.8 km/s @ 345 GHz)
-/application/bin/SMARechunker -i /data/science/mir_data/210903_10:43:29/ -o ./SMA2021AA010_track5 -r 16
-
 # load raw data
 readdata, dir='SMA2021AA010_track5'
+select,/p,/re,band='c1'
+sp[psf].nch = 1
 
 # re-generate continuum data by performing spectral averaging over the first 4 spectral windows
-select, /p, /reset, band=['c1','s1','s2','s3','s4']
-u!!!ti_avgband, swmch1=60, swmch2=964
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+uti_avgband, swmch1=60, swmch2=964
 plot_continuum
 
 # examing the calibrator data
@@ -71,9 +36,21 @@ flag,/flag
 select, /p, /reset
 uti_checkspike,source='3c84',/baseline,ntrim=60, threshold=5, /fix, sample=1
 
+select, /p, /reset
+uti_checkspike,source='3c84',/baseline,ntrim=60, threshold=5, /fix, sample=1
+
+
+# inspect spectra
+select, /p, /reset, sideband='l', source=['3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+
 # regenerate continuum
 select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
+
+# examing the calibrator data again
 select,/p,/reset, source=['0510+180','0418+380','3c84']
 plot_continuum
 
@@ -148,7 +125,7 @@ result = plo_var('dhrs','el',frames_per_page=1)
 
 select, /p, /reset, source=['0510+180','0418+380','3c84','CoKu_Tau_1'], sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-plot_continuum
+plot_continuum,  x = 'int'
 plot_continuum, preavg, frames_p=4, y='amp'
 plot_continuum, frames_p=4, y='pha'
 
@@ -159,7 +136,7 @@ select, /p, /reset
 # 1. ipoint:
 #
 #
-# 2. Reference antenna: 1
+# 2. Reference antenna: 6
 #
 ##########################################################################
 
@@ -225,6 +202,7 @@ flag,/flag
 select, /p, /reset
 plot_continuum
 
+select, /p, /reset
 mir_save, 'ChiaYing_track5.flag.mir'
 
 
@@ -255,6 +233,11 @@ select,/p,/reset
 apply_tsys
 plot_continuum, x='int'
 
+select, /p, /reset, source=['0510+180','0418+380', '3c84'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+select, /p, /reset
 mir_save, 'ChiaYing_track5.tsys.mir'
 
 ## Notes #################################################################
@@ -275,20 +258,27 @@ mir_save, 'ChiaYing_track5.tsys.mir'
 
 select, /p, /reset
 result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
-pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16,refant=1
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+pass_cal, cal_type='pha', tel_bsl='telescope', preavg=16, ntrim=4,smooth=1, frames_p=16, refant=6
 # 3c84 yes 
 
 select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 
 # re-inspect passband splikes
-# select, /p,/reset,sou='3c84', sideband='l'
-# result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-# plot_spectra,x_var='channel',y_vars='amp,pha', frame_vars='blcd', color_vars='band',frames_per_page=4
+select, /p,/reset,sou='3c84', sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra,x_var='channel',y_vars='amp,pha', frame_vars='blcd', color_vars='band',frames_per_page=4
+# s3 of antenna 8 has noisy phase
 
-select, /p, /reset
-result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
-pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16,refant=1
+select, /p,/reset, band='s3'
+result=dat_filter(s_f, '"blcd" like "8"  ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+flag,/flag
+
+#select, /p, /reset
+#result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+#pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16,refant=1
 
 select, /p, /reset
 mir_save, 'ChiaYing_track5.tsys.bp.mir'
@@ -369,16 +359,20 @@ WARNING: the mean time separation between the target date and the flux monitorin
 
 select, /p, /reset, band='c1', sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-gain_cal, cal_type='pha',/connect,/non_point,tel_bsl='telescope',refant=1
+gain_cal, cal_type='pha',/connect,/non_point,tel_bsl='telescope',refant=2, /loose
 # all no
 # 0510+180 yes 1
 # 0418+380 yes 1
 # 3c84 yes 1
 # Neptune yes 1
 
+select, /p, /reset, source=['0510+180','0418+380', '3c84'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
 select, /p, /reset, band='c1', sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-gain_cal,cal_type='amp',x='hours',poly=0,tel_bsl='telescope',refant=1,/preavg,/non_point
+gain_cal, cal_type='amp', x='hours', poly=0, tel_bsl='telescope', refant=6, /preavg, /non_point, /loose
 # all no
 # Neptune yes 34.4
 
@@ -387,41 +381,19 @@ result=dat_filter(s_f, ' "el" gt "60" and "el" lt "70"' )
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flux_measure
 
-Scalar Average or Vector Average ? [S <V>]: S
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   22.0706      59     10.82     22.0651     -0.0110
-      3c84             24    5.6809     138     15.14      5.6670     -0.0080
-  0418+380             16    1.2405      53     14.36      1.1949      0.0175
-  0510+180             39    0.9526      67     16.74      0.8469      0.0045
+   Neptune      g      30   22.0738      59     10.82     22.0699     -0.0186
+      3c84             24    5.6858     141     15.14      5.6739     -0.0064
+  0418+380             16    1.2258      57     14.36      1.1849      0.0110
+  0510+180             39    0.9367      70     16.74      0.8539      0.0016
 
-Scalar Average or Vector Average ? [S <V>]: V
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   22.0651      59     10.82     22.0651     -0.0110
-      3c84             24    5.6670     137     15.14      5.6670     -0.0080
-  0418+380             16    1.1951      50     14.36      1.1949      0.0175
-  0510+180             39    0.8469      53     16.74      0.8469      0.0045
-
-# without /preavg in amp cal
-# gain_cal,cal_type='amp',x='hours',poly=0,tel_bsl='telescope',refant=1,/non_point
-
-Scalar Average or Vector Average ? [S <V>]: S
-Scalar average: 
-#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   22.0705      59     10.82     22.0655     -0.0194
-      3c84             24    5.7093     141     15.14      5.6972     -0.0067
-  0418+380             16    1.2249      58     14.36      1.1818      0.0132
-  0510+180             39    0.9372      70     16.74      0.8531      0.0022
-
-Scalar Average or Vector Average ? [S <V>]: V
-Vector average: 
-#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   22.0655      59     10.82     22.0655     -0.0194
-      3c84             24    5.6973     141     15.14      5.6972     -0.0067
-  0418+380             16    1.1819      54     14.36      1.1818      0.0132
-  0510+180             39    0.8531      58     16.74      0.8531      0.0022
-
+   Neptune      g      30   22.0699      59     10.82     22.0699     -0.0186
+      3c84             24    5.6739     140     15.14      5.6739     -0.0064
+  0418+380             16    1.1849      54     14.36      1.1849      0.0110
+  0510+180             39    0.8539      58     16.74      0.8539      0.0016
 
 ## Notes #################################################################
 
@@ -429,9 +401,9 @@ Vector average:
           
 # RX 400
 #   LSB
-#   0418+380 yes 1.1951
-#   0510+180 yes 0.8469
-#   3c84     yes 5.6670
+#   0418+380 yes 1.1849
+#   0510+180 yes 0.8539
+#   3c84     yes 5.6739
 
 ##########################################################################
 
@@ -439,24 +411,26 @@ Vector average:
 
 
 #### Gain Calibration and Miriad Files Output ############################
-# IDL> device, decomposed=0, retain=2
-# IDL> .compile idl2miriad
-
 
 # RX400, LSB
 mir_restore, 'ChiaYing_track5.tsys.bp.mir'
 
+select, /p, /reset, source=['0510+180','0418+380','3c84','CoKu_Tau_1'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum,  x = 'int'
+
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', smoothing=0.1,tel_bsl='baseline', refant=1
+gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='telescope', refant=6, /loose
 # apply :
   all no
-# 0418+380 yes 1.1951
-# 0510+180 yes 0.8469
-# 3c84     yes 5.6670
+#   0418+380 yes 1.1849
+#   0510+180 yes 0.8539
+#   3c84     yes 5.6739
 
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=1, /preavg
-
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
 
 select, /p, /reset, sideband='l', source=['0418+380','0510+180','3c84']
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -466,9 +440,20 @@ select,/p,/reset
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 mir_save, 'ChiaYing_track5.rx400.lsb.cal.mir', /new
 
-idl2miriad, dir='IP_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='IP_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='IP_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='IP_Tau',band=['s1','s2','s3','s4','s5']
 
-idl2miriad, dir='IQ_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='IQ_Tau',band=['s1','s2','s3','s4','s5','s6']
+idl2miriad, dir='IQ_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='IQ_Tau',band=['s1','s2','s3','s4','s5']
+
+idl2miriad, dir='RY_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='RY_Tau',band=['s1','s2','s3','s4','s5']
+
+idl2miriad, dir='CY_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='CY_Tau',band=['s1','s2','s3','s4','s5']
+
+idl2miriad, dir='BP_Tau_track5.rx400.lsb.cal.miriad',sideband='l',source='BP_Tau',band=['s1','s2','s3','s4','s5']
+
+idl2miriad, dir='AB_Aur_track5.rx400.lsb.cal.miriad',sideband='l',source='AB_Aur',band=['s1','s2','s3','s4','s5']
+
+idl2miriad, dir='LkCa_15_track5.rx400.lsb.cal.miriad',sideband='l',source='LkCa_15',band=['s1','s2','s3','s4','s5']
+
 
 ## Notes #################################################################
 #
