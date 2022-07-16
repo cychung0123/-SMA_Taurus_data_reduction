@@ -1,0 +1,500 @@
+#### Software ###########################################################
+# on carbon
+# linux> source /home/cychung/software/sma-mir/setup.bsh
+# IDL> device, decomposed=0, retain=2
+# to add color 
+##########################################################################
+
+
+
+
+##### Read Data in MIR IDL ###############################################
+
+# load raw data
+readdata, dir='SMA2021BA003_track1'
+select,/p,/re,band='c1'
+sp[psf].nch = 1
+
+# check the spectra to find the channel range to generate continuum
+select, /p, /reset, sideband='u', source=['3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra, color_var ='band'
+
+# re-generate continuum data by performing spectral averaging over the first 4 spectral windows
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+uti_avgband, swmch1=60, swmch2=964
+plot_continuum
+# no Tsys of antenna 1
+
+select, /p, /reset
+plot_continuum, x='int'
+# the first few scans of bp cal 3c84 have no detection
+
+# flag bp calibrator
+select, /p, /reset
+result=dat_filter(s_f, '"int" lt "100"')
+flag,/flag
+
+# examing the calibrator data
+select, /p, /reset, source=['0510+180','0418+380','3c84']
+plot_continuum, x='int'
+
+# flag phase jump
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1389" and "int" lt "1458" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "550" and "int" lt "599" ')
+flag,/flag
+
+# check and remove spikes
+select, /p, /reset
+uti_checkspike, source='3c84', /baseline, threshold=5, /fix, sample=1
+
+# inspect spectra
+select, /p, /reset, sideband='l', source=['3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+# regenerate continuum
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+plot_continuum
+# check the data was flagged correctly
+
+# examing the calibrator data again
+select, /p, /reset, source=['0510+180','0418+380','3c84']
+plot_continuum
+
+# save MIR format data
+select, /p, /reset
+mir_save, 'ChiaYing_track6.mir', /new
+
+
+### Notes ################################################################
+
+#
+# Calibrating the RX345 USB and LSB
+#
+
+# passband: 3c84
+# source  :
+# Flux    : Neptune
+# gain    : 0510+180, 0418+380, 3c84
+
+# (tau_225 GHz: 0.05~0.08) throughout the night
+#
+##########################################################################
+
+
+mir_restore, 'ChiaYing_track6.mir'
+
+##### Inspect elevation ################################
+
+result = plo_var('dhrs','el',frames_per_page=1)
+
+##### Notes ############################################
+#
+# Elevation of Uranus in between 35 and 45 deg.
+#
+########################################################
+
+
+##### Initial Data Insepction ############################################
+
+select, /p, /reset, source=['0510+180','0418+380','3c84','Haro_6-39'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+
+##### Flag the ipoint Data and Strange data ##############################
+
+###### Rx345 LSB ########################################
+
+# flag scans to keep only the desired gain phase calibration, elevation less than 20
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "2034" and "int" lt "2041" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "2154" ')
+flag,/flag
+
+# phase jump
+
+# high noise
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "230" and "int" lt "309" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "2040" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "308" and "int" lt "363" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "368" and "int" lt "375" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "422" and "int" lt "429" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "4" and "blcd" like "6"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "422" and "int" lt "429" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "422" and "int" lt "429" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "2099" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "2" and "blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "538" and "int" lt "545" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "538" and "int" lt "545" ')
+flag,/flag
+
+select, /p, /reset, sideband='l', sou='0510+180'
+result=dat_filter(s_f, '"blcd" like "2" and "blcd" like "6"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "400" and "int" lt "500" ')
+flag,/flag
+
+select, /p, /reset, sideband='l', sou='0510+180'
+result=dat_filter(s_f, '"blcd" like "2" and "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "400" and "int" lt "500" ')
+flag,/flag
+
+
+# check the continuum again
+select, /p, /reset
+plot_continuum, x = 'int'
+
+select, /p, /reset
+mir_save, 'ChiaYing_track6.flag.mir'
+
+
+
+#### Tsys Correction  ####################################################
+
+# inspect Tsys
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+select, /p, /reset
+result=dat_filter(s_f, ' "blcd" like "1"')
+flag,/flag
+
+select,/p,/reset
+apply_tsys
+plot_continuum, x='int'
+
+select, /p, /reset, source=['0510+180','0418+380','3c84'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+# Antenna 7 has noisy amplitude
+
+select,/p,/reset
+mir_save, 'ChiaYing_track6.tsys.mir'
+
+## Notes #################################################################
+#    except Ant 7
+#    400 GHz: Tsys is 1500-2500 K in the target loop
+#    
+#    Antenna 7: Tsys is 2000-4000 K in the target loop
+#
+#########################################################################
+
+
+
+#### Passband Calibration ################################################
+
+select, /p, /reset
+result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+pass_cal, cal_type='pha', tel_bsl='telescope', preavg=16, ntrim=4,smooth=1, frames_p=16, refant=6
+# 3c84 yes
+
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+
+# re-inspect passband splikes
+select, /p, /reset, sou='3c84', sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+
+#select, /p, /reset
+#result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
+#pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16, refant=1
+
+select, /p, /reset
+mir_save, 'ChiaYing_track6.tsys.bp.mir'
+
+## Notes #################################################################
+
+# http://sma1.sma.hawaii.edu/planetvis.html
+# Uranus: 91.2  Jy @ 397 GHz
+# Uranus: 98.4  Jy @ 417 GHz
+
+
+# http://sma1.sma.hawaii.edu/callist/callist.html
+# J0510+180
+ 850   16 Feb 2016 08:51   SMA       346.95   3.274 +/-  0.168    mgurwell
+ 850   22 Jan 2017 11:03   SMA       351.36   2.160 +/-  0.118    mgurwell
+
+# 0418+380
+ 850   29 Jun 2021 19:15   SMA       350.21   1.242 +/-  0.086    mgurwell
+ 850   08 Jul 2021 18:15   SMA       346.02   1.163 +/-  0.070    mgurwell
+ 850   16 Oct 2021 13:23   SMA       349.85   1.077 +/-  0.060    mgurwell
+ 850   23 Nov 2021 10:48   SMA       340.98   1.017 +/-  0.052    mgurwell
+
+# 3c84
+ 850   29 Jun 2021 18:38   SMA       350.21   6.503 +/-  0.328    mgurwell
+ 850   08 Jul 2021 17:45   SMA       346.02   6.376 +/-  0.320    mgurwell
+ 850   13 Aug 2021 16:34   SMA       346.28   5.648 +/-  0.283    mgurwell
+ 850   16 Oct 2021 14:36   SMA       349.85   7.501 +/-  0.375    mgurwell
+ 850   23 Nov 2021 09:43   SMA       340.98   6.765 +/-  0.338    mgurwell
+##########################################################################
+
+
+#### Measure the Absolute Flux ###########################################
+
+
+###### Rx345 LSB ########################################
+select, /p, /reset, band='c1', sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, cal_type='pha',/connect,/non_point,tel_bsl='telescope',refant=2, /loose
+# all no
+# 0510+180 yes 1
+# 0418+380 yes 1
+# 3c84 yes 1
+# Uranus yes 1
+
+select, /p, /reset, source=['0510+180','0418+380','3c84','Haro_6-39'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+flag,/flag
+
+select, /p, /reset, band='c1', sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, cal_type='amp', x='hours', poly=0, tel_bsl='telescope', refant=6, /preavg, /non_point, /loose
+# all no
+# Uranus yes 91.2
+
+select, /p, /reset, band='c1', sideband='l', source=['3c84','0418+380','0510+180','Uranus']
+result=dat_filter(s_f, ' "el" gt "30" and "el" lt "50"' )
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+flux_measure
+
+Scalar average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+      3c84             72    6.5367     208      8.13      6.5186      0.0082
+    Uranus      g      30   29.1856      19      5.35     25.0710      0.1294
+  0418+380             24    1.2220      44     10.63      1.1701      0.0095
+  0510+180             36    1.0492      43     12.54      0.9455      0.0076
+
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+      3c84             72    6.5186     206      8.13      6.5186      0.0082
+    Uranus      g      30   25.0714      14      5.35     25.0710      0.1294
+  0418+380             24    1.1701      40     10.63      1.1701      0.0095
+  0510+180             36    0.9455      34     12.54      0.9455      0.0076
+
+
+
+## Notes #################################################################
+
+# apply :
+
+# RX 345
+#   LSB
+#   0418+380 yes 1.1701
+#   0510+180 yes 0.9455
+#   3c84     yes 6.5186
+
+##########################################################################
+
+
+#### Gain Calibration and Miriad Files Output ############################
+mir_restore, 'ChiaYing_track6.tsys.bp.mir'
+
+###### Rx345 LSB ########################################
+
+select, /p, /reset, source=['0510+180','0418+380','3c84','IQ_Tau'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
+# flag part of 3c84 with different phase from 0510+180
+select, /p, /reset, sideband='l', sou='3c84'
+result=dat_filter(s_f, '"blcd" like "5" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1400" ')
+flag,/flag
+
+select, /p, /reset, sideband='l', sou='0510+180'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, ' "int" lt "700" ')
+flag,/flag
+
+
+# different calibrator
+select, /p, /reset, sideband='l', sou='0510+180'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1105" and "int" lt "1259" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "5" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1389" and "int" lt "1458" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "5" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1764" and "int" lt "1813" ')
+flag,/flag
+
+# phase jump
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "4" and "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "434" and "int" lt "539" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1521" and "int" lt "1574" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "4"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1933" and "int" lt "1988" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1462" and "int" lt "1516" ')
+flag,/flag
+
+# noisy
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "7" ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "778" and "int" lt "785" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "4" and "blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1099" and "int" lt "1106" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "4" and "blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "610" and "int" lt "617" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, ' "blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1939"')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1875" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7" and "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1521" and "int" lt "1640"  ')
+flag,/flag
+
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='telescope', refant=6, /loose
+# apply :
+  all no
+#   0418+380 yes 1.1701
+#   0510+180 yes 0.9455
+#   3c84     yes 6.5186
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+
+# check gain calibrator again
+select, /p, /reset, sideband='l', source=['0418+380','0510+180','3c84']
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+plot_continuum
+
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+mir_save, 'ChiaYing_track6.rx400.lsb.cal.mir', /new
+
+idl2miriad, dir='IP_Tau_track6.rx400.lsb.cal.miriad',sideband='l',source='IP_Tau',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='IQ_Tau_track6.rx400.lsb.cal.miriad',sideband='l',source='IQ_Tau',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='RY_Tau_track6.rx400.lsb.cal.miriad',sideband='l',source='RY_Tau',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='CY_Tau_track6.rx400.lsb.cal.miriad',sideband='l',source='CY_Tau',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='BP_Tau_track6.rx400.lsb.cal.miriad',sideband='l',source='BP_Tau',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='AB_Aur_track6.rx400.lsb.cal.miriad',sideband='l',source='AB_Aur',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='LkCa_15_track6.rx400.lsb.cal.miriad',sideband='l',source='LkCa_15',band=['s1','s2','s3','s4']
+
+
+
+
