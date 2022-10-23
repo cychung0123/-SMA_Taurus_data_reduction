@@ -11,7 +11,9 @@
 
 # load raw data
 readdata, dir='SMA2021BA003_track3'
-# There is no Tsys of antenna 1, replace Tsys.
+select,/p,/re,band='c1'
+sp[psf].nch = 1
+# There is no Tsys of antenna 1, flag antenna 1.
 
 
 select,baseline='2-4',/reset
@@ -224,14 +226,8 @@ result=dat_filter(s_f, '"int" gt "352" and "int" lt "441" ')
 flag,/flag
 
 select, /p, /reset, sideband='u'
-result=dat_filter(s_f, '"blcd" like "4" or "blcd" like "7" or "blcd" like "8" ')
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "2123"')
-flag,/flag
-
-select, /p, /reset, sideband='u'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "2216"')
 flag,/flag
 
 select, /p, /reset, source=['0510+180','0418+380','Haro_6-39'], sideband='u'
@@ -249,10 +245,17 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "440" and "int" lt "554"')
 flag,/flag
 
+#flag antenna 1
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "1"  ')
+flag,/flag
+
+
 # check the continuum again
 select, /p, /reset
 plot_continuum, x = 'int'
 
+select, /p, /reset
 mir_save, 'ChiaYing_track1.flag.mir'
 
 
@@ -286,11 +289,12 @@ mir_save, 'ChiaYing_track1.tsys.mir'
 
 select, /p, /reset
 result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
-pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16, refant=1
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+pass_cal, cal_type='pha', tel_bsl='telescope', preavg=4, ntrim=16,smooth=1, frames_p=16, refant=2
 # all no
 # 3c84 yes
 
-select, /p, /reset, band=['c1','s2','s3','s4']
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
 uti_avgband, swmch1=60, swmch2=964
 
 # re-inspect passband splikes
@@ -298,9 +302,6 @@ select, /p, /reset, sou='3c84', sideband='u'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
-select, /p, /reset
-result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
-pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16, refant=1
 
 select, /p, /reset
 mir_save, 'ChiaYing_track1.tsys.bp.mir'
@@ -379,6 +380,10 @@ gain_cal, cal_type='pha', /connect, /non_point, tel_bsl='telescope', refant=2
 # Uranus yes 1
 # the last 3 scans of antenna 7 is not good
 
+select, /p, /reset, source=['0510+180','0418+380','3c84'], sideband='u'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
 # flag noisy data
 select, /p, /reset, sideband='u', source=['3c84']
 result=dat_filter(s_f, ' "int" gt "1658"  ')
@@ -393,6 +398,27 @@ gain_cal, cal_type='amp', x='hours', tel_bsl='telescope', refant=2, smoothing=10
 # 3c84 yes 8.469
 
 mir_save, 'ChiaYing_track1.flux.mir'
+
+select, /p, /reset, band='c1', sideband='u', source=['3c84','0418+380','0510+180','Uranus', 'bllac']
+result=dat_filter(s_f, ' "el" gt "40" and "el" lt "70"' )
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flux_measure
+
+Scalar average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+     bllac            259    5.0183     285      4.49      5.0020     -0.0028
+    Uranus             21   18.2068      32      5.20     17.9907     -0.0351
+  0418+380             60    1.0763     233     10.36      1.0744     -0.0013
+      3c84      g      84    8.4774     370      9.35      8.4753     -0.0036
+  0510+180             60    1.1076     231     11.00      1.1061     -0.0003
+
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+     bllac            259    5.0020     275      4.49      5.0020     -0.0028
+    Uranus             21   17.9908      31      5.20     17.9907     -0.0351
+  0418+380             60    1.0744     230     10.36      1.0744     -0.0013
+      3c84      g      84    8.4753     365      9.35      8.4753     -0.0036
+  0510+180             60    1.1061     230     11.00      1.1061     -0.0003
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f, ' "blcd" like "4" or "blcd" like "7" or "blcd" like "8" ')
@@ -412,19 +438,19 @@ flux_measure
 
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac            260    5.5680     257      4.49      5.5642      0.0615
-    Uranus             21   30.3636      36      5.20     30.3128      0.1621
-  0418+380             60    1.0946     162     10.36      1.0931      0.0127
-      3c84      g      84    8.6128     500      9.35      8.6114      0.1133
-  0510+180             60    1.1183     126     11.15      1.1166      0.0026
+     bllac            259    5.2082     122      4.49      5.2023     -0.0096
+    Uranus             21   24.0705      21      5.20     23.9839     -0.1119
+  0418+380             60    1.0904      89     10.36      1.0896     -0.0025
+      3c84      g      84    8.5842     273      9.35      8.5840      0.0045
+  0510+180             60    1.0996      67     11.15      1.0987     -0.0040
 
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac            260    5.5645     255      4.49      5.5642      0.0615
-    Uranus             21   30.3132      35      5.20     30.3128      0.1621
-  0418+380             60    1.0931     162     10.36      1.0931      0.0127
-      3c84      g      84    8.6122     499      9.35      8.6114      0.1133
-  0510+180             60    1.1166     125     11.15      1.1166      0.0026
+     bllac            259    5.2023     120      4.49      5.2023     -0.0096
+    Uranus             21   23.9842      21      5.20     23.9839     -0.1119
+  0418+380             60    1.0896      89     10.36      1.0896     -0.0025
+      3c84      g      84    8.5840     273      9.35      8.5840      0.0045
+  0510+180             60    1.0987      67     11.15      1.0987     -0.0040
 
 
 ## Notes #################################################################
@@ -433,8 +459,8 @@ Vector average:
 
 # RX 240
 #   LSB
-#   0418+380 yes 1.0931
-#   0510+180 yes 1.1166
+#   0418+380 yes 1.0896
+#   0510+180 yes 1.0987
 
 # Flag 3c84 after the absolute flux calibration
 
@@ -474,15 +500,26 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "559" and "int" lt "614"')
 flag,/flag
 
+# noise
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f, '"blcd" like "8" ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1830" and "int" lt "1945"')
+flag,/flag
+
+
+
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', tel_bsl='baseline', refant=2, /preavg, /connect
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=2, /preavg, /connect, /loose
 # apply :
   all no
-#   0418+380 yes 1.0931
-#   0510+180 yes 1.1166
+#   0418+380 yes 1.0896
+#   0510+180 yes 1.0987
 
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=2, /preavg
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=2, /preavg, /loose
 
 # check gain calibrator again
 select, /p, /reset, sideband='u', source=['0418+380','0510+180']
@@ -506,4 +543,8 @@ idl2miriad, dir='BP_Tau_track1.rx240.usb.cal.miriad',sideband='u',source='BP_Tau
 idl2miriad, dir='LkCa_15_track1.rx240.usb.cal.miriad',sideband='u',source='LkCa_15',band=['s1','s2','s3','s4','s5','s6']
 
 idl2miriad, dir='AB_Aur_track1.rx240.usb.cal.miriad',sideband='u',source='AB_Aur',band=['s1','s2','s3','s4','s5','s6']
+
+targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP_Tau', 'CoKu_Tau_1', 'RY_Tau', 'DE_Tau', 'IP_Tau', 'FT_Tau', 'FV_Tau', 'DH_Tau', 'IQ_Tau', 'DK_Tau', 'UZ_Tau', 'DL_Tau', 'GK_Tau', 'AA_Tau', 'LkCa_15', 'CI_Tau', '04278+2253', 'T_Tau', 'UX_Tau', 'V710_Tau', 'DM_Tau', 'DQ_Tau', 'Haro_6-37', 'DR_Tau', 'FY_Tau', 'HO_Tau', 'DN_Tau', 'DO_Tau', 'HV_Tau', 'IC_2087_IR', 'GO_Tau', 'CIDA-7', 'DS_Tau', 'UY_Aur', 'Haro_6-39', 'GM_Aur', 'AB_Aur', 'SU_Aur', 'RW_Aur', 'CIDA-9', 'V836_Tau']
+
+foreach targ, targ_list do idl2miriad, dir=targ+'_track1.rx240.usb.cal.miriad',sideband='u',source=targ,band=['s1','s2','s3','s4','s5','s6']
 

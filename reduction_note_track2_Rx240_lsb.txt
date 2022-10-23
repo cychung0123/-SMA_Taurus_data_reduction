@@ -9,6 +9,8 @@
 
 # load raw data
 readdata, dir='SMA2021AA010_track2'
+select,/p,/re,band='c1'
+sp[psf].nch = 1
 
 # check the spectra to find the channel range to generate continuum
 select, /p, /reset, sideband='l', source=['3c84']
@@ -138,12 +140,6 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "1868" and "int" lt "1875" ')
 flag,/flag
 
-# flag the 3c84 part without the scan of the other two calibrators
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "1189" and "int" lt "1392" ')
-flag,/flag
-
 # flag the first scan of 0418+380
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
@@ -157,22 +153,11 @@ result=dat_filter(s_f, '"int" gt "1926" ')
 flag,/flag
 
 # flag phase jump
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "8"')
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "1754" and "int" lt "1803" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "4"')
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "1808" and "int" lt "1921" ')
-flag,/flag
-
 
 select, /p, /reset
 plot_continuum, x = 'int'
 
+select, /p, /reset
 mir_save, 'ChiaYing_track2.flag.mir'
 
 #### Tsys Correction  ####################################################
@@ -182,15 +167,15 @@ select,/p,/reset
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_var, frames_p=6
 
-
 select,/p,/reset
 apply_tsys
 plot_continuum, x='int'
 
-select, /p, /reset, source=['0510+180','0418+380']
+select, /p, /reset, source=['0510+180','0418+380'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_continuum, x = 'int'
 
-
+select,/p,/reset
 mir_save, 'ChiaYing_track2.tsys.mir'
 
 ## Notes #################################################################
@@ -206,21 +191,18 @@ mir_save, 'ChiaYing_track2.tsys.mir'
 
 select, /p, /reset
 result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
-pass_cal, cal_type='pha', smoothing=16, ntrim=64, frames_p=16, refant=1
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+pass_cal, cal_type='pha', tel_bsl='telescope', preavg=4, ntrim=16,smooth=1, frames_p=16, refant=6
 # all no
 # 3c84 yes
 
-select, /p, /reset, band=['c1','s3','s4','s5','s6']
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
 uti_avgband, swmch1=60, swmch2=964
 
 # re-inspect passband splikes
 select, /p, /reset, sou='3c84', sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
-
-select, /p, /reset
-result=dat_filter(s_f, ' "wt" gt "0" and "nch" eq "1024" ', /reset)
-pass_cal, cal_type='amp', smoothing=16, ntrim=64, frames_p=16, refant=1
 
 select, /p, /reset
 mir_save, 'ChiaYing_track2.tsys.bp.mir'
@@ -245,6 +227,44 @@ mir_save, 'ChiaYing_track2.tsys.bp.mir'
  1mm   16 Oct 2021 14:18   SMA       224.91   9.000 +/-  0.450    mgurwell
  1mm   18 Oct 2021 09:45   SMA       223.51   8.969 +/-  0.451    mgurwell
  1mm   21 Oct 2021 14:53   SMA       225.14   8.842 +/-  0.442    mgurwell
+
+ssh cychung@almat8
+cd software
+casa57
+
+In CASA 5.7
+import sys
+sys.path.append("./analysis_scripts")
+import analysisUtils as au
+
+CASA <4>: au.getALMAFlux('J0510+180', '228GHz', lowband=3, highband=7, date='20211018')
+  Closest Band 3 measurement: 1.750 +- 0.040 (age=+4 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.880 +- 0.040 (age=+4 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.970 +- 0.040 (age=+4 days) 343.5 GHz 
+  Closest Band 7 measurement: 0.990 +- 0.040 (age=+4 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age 4.0 days from 20211018, with age separation of 0 days
+  20211014: freqs=[103.5, 91.47, 343.48], fluxes=[1.75, 1.88, 0.97]
+Median Monte-Carlo result for 228.000000 = 1.187943 +- 0.077452 (scaled MAD = 0.077818)
+Result using spectral index of -0.498068 for 228.000 GHz from 1.815 Jy at 97.485 GHz = 1.188751 +- 0.077452 Jy
+
+CASA <5>: au.getALMAFlux('J0418+380', '228GHz', lowband=3, highband=7, date='20211018')
+  Closest Band 3 measurement: 1.223 +- 0.061 (age=-29 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.299 +- 0.065 (age=-29 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.696 +- 0.035 (age=-29 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age -29.0 days from 20211018, with age separation of 0 days
+  20211116: freqs=[103.5, 91.5, 343.5], fluxes=[1.223, 1.299, 0.696]
+Median Monte-Carlo result for 228.000000 = 0.843040 +- 0.070269 (scaled MAD = 0.070589)
+Result using spectral index of -0.470983 for 228.000 GHz from 1.261 Jy at 97.500 GHz = 0.845192 +- 0.070269 Jy
+
+CASA <7>: au.getALMAFlux('J0319+4130', '228GHz', lowband=3, highband=7, date='20211018')
+  Closest Band 3 measurement: 14.810 +- 0.210 (age=+4 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 16.310 +- 0.210 (age=+4 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 6.210 +- 0.140 (age=+4 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age 4.0 days from 20211018, with age separation of 0 days
+  20211014: freqs=[103.5, 91.47, 343.48], fluxes=[14.81, 16.31, 6.21]
+Median Monte-Carlo result for 228.000000 = 8.359352 +- 0.299348 (scaled MAD = 0.297197)
+Result using spectral index of -0.728372 for 228.000 GHz from 15.560 Jy at 97.485 GHz = 8.379972 +- 0.299348 Jy
+
 ##########################################################################
 
 #### Measure the Absolute Flux ###########################################
@@ -260,9 +280,13 @@ gain_cal, cal_type='pha', /connect, /non_point, tel_bsl='telescope', refant=1
 # Uranus yes 1
 # bllac yes 1
 
+select, /p, /reset, source=['0510+180','0418+380','3c84'], sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_continuum, x = 'int'
+
 select, /p, /reset, band='c1', sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, cal_type='amp', x='hours', poly=0, tel_bsl='telescope', refant=1, /preavg, /non_point
+gain_cal, cal_type='amp', x='hours', poly=0, tel_bsl='telescope', refant=6, /preavg, /non_point, /loose
 # all no
 # Uranus yes 38
 
@@ -273,20 +297,19 @@ flux_measure
 
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac              5    4.9265     216      8.54      4.9254     -0.0077
-    Uranus      g      40   24.2852      79      8.65     24.2843      0.0022
-  0418+380             12    1.0223     155     15.53      1.0192      0.0044
-      3c84             24    8.5848     575     12.02      8.5843     -0.0019
-  0510+180             18    1.1332     162     14.57      1.1296     -0.0003
+     bllac              5    4.9672     220      8.54      4.9666     -0.0072
+    Uranus      g      40   24.6567      79      8.65     24.6560     -0.0004
+  0418+380             12    1.0261     182     15.53      1.0240      0.0027
+      3c84             40    8.5487     743     12.76      8.5484      0.0005
+  0510+180             18    1.1297     183     14.57      1.1274     -0.0009
 
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-     bllac              5    4.9254     216      8.54      4.9254     -0.0077
-    Uranus      g      40   24.2843      79      8.65     24.2843      0.0022
-  0418+380             12    1.0192     155     15.53      1.0192      0.0044
-      3c84             24    8.5843     575     12.02      8.5843     -0.0019
-  0510+180             18    1.1296     160     14.57      1.1296     -0.0003
-
+     bllac              5    4.9667     220      8.54      4.9666     -0.0072
+    Uranus      g      40   24.6560      79      8.65     24.6560     -0.0004
+  0418+380             12    1.0240     182     15.53      1.0240      0.0027
+      3c84             40    8.5484     743     12.76      8.5484      0.0005
+  0510+180             18    1.1274     182     14.57      1.1274     -0.0009
 
 
 ## Notes #################################################################
@@ -295,9 +318,9 @@ Vector average:
 
 # RX 240
 #   LSB
-#   0418+380 yes 1.0192
-#   0510+180 yes 1.1296
-#   3c84     yes 8.5843
+#   0418+380 yes 1.0240
+#   0510+180 yes 1.1274
+#   3c84     yes 8.5484
 
 ##########################################################################
 
@@ -308,9 +331,15 @@ Vector average:
 mir_restore, 'ChiaYing_track2.tsys.bp.mir'
 
 # flag 3c84
-select, /p, /reset, source=['0510+180','0418+380','3c84','CoKu_Tau_1'], sideband='l'
+select, /p, /reset, source=['0510+180','0418+380','3c84','IQ_Tau'], sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_continuum, x = 'int'
+
+# flag the 3c84 part without the scan of the other two calibrators
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1189" and "int" lt "1392" ')
+flag,/flag
 
 select, /p, /reset, sideband='l', source=['3c84']
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
@@ -329,6 +358,13 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "697" and "int" lt "809" ')
 flag,/flag
 
+# phase jump
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "573" and "int" lt "626" ')
+flag,/flag
+
 select, /p, /reset, sideband = 'l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_continuum, x = 'int'
@@ -336,15 +372,15 @@ plot_continuum, x = 'int'
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', tel_bsl='baseline', refant=1, /preavg, /connect
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, /preavg, /connect, /loose
 # apply :
   all no
-#   0418+380 yes 1.0192
-#   0510+180 yes 1.1296
-#   3c84     yes 8.5843
+#   0418+380 yes 1.0240
+#   0510+180 yes 1.1274
 
-
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=1, /preavg
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.1,refant=6, /preavg, /loose
 
 # check gain calibrator again
 select, /p, /reset, sideband='l', source=['0418+380','0510+180','3c84']
@@ -368,4 +404,9 @@ idl2miriad, dir='BP_Tau_track2.rx240.lsb.cal.miriad',sideband='l',source='BP_Tau
 idl2miriad, dir='AB_Aur_track2.rx240.lsb.cal.miriad',sideband='l',source='AB_Aur',band=['s1','s2','s3','s4','s5','s6']
 
 idl2miriad, dir='LkCa_15_track2.rx240.lsb.cal.miriad',sideband='l',source='LkCa_15',band=['s1','s2','s3','s4','s5','s6']
+
+targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP_Tau', 'CoKu_Tau_1', 'RY_Tau', 'DE_Tau', 'IP_Tau', 'FT_Tau', 'FV_Tau', 'DH_Tau', 'IQ_Tau', 'DK_Tau', 'UZ_Tau', 'DL_Tau', 'GK_Tau', 'AA_Tau', 'LkCa_15', 'CI_Tau', '04278+2253', 'T_Tau', 'UX_Tau', 'V710_Tau', 'DM_Tau', 'DQ_Tau', 'Haro_6-37', 'DR_Tau', 'FY_Tau', 'HO_Tau', 'DN_Tau', 'DO_Tau', 'HV_Tau', 'IC_2087_IR', 'GO_Tau', 'CIDA-7', 'DS_Tau', 'UY_Aur', 'Haro_6-39', 'GM_Aur', 'AB_Aur', 'SU_Aur', 'RW_Aur', 'CIDA-9', 'V836_Tau']
+
+foreach targ, targ_list do idl2miriad, dir=targ+'_track2.rx240.lsb.cal.miriad',sideband='l',source=targ,band=['s1','s2','s3','s4','s5','s6']
+
 
