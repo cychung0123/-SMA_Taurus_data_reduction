@@ -291,6 +291,43 @@ mir_save, 'ChiaYing_track6.tsys.bp.mir'
  850   13 Aug 2021 16:34   SMA       346.28   5.648 +/-  0.283    mgurwell
  850   16 Oct 2021 14:36   SMA       349.85   7.501 +/-  0.375    mgurwell
  850   23 Nov 2021 09:43   SMA       340.98   6.765 +/-  0.338    mgurwell
+
+ssh cychung@almat8
+cd software
+casa57
+
+In CASA 5.7
+import sys
+sys.path.append("./analysis_scripts")
+import analysisUtils as au
+
+CASA <10>: au.getALMAFlux('J0510+180', '397.5GHz', lowband=3, highband=7, date='20211122')
+  Closest Band 3 measurement: 1.870 +- 0.050 (age=-3 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.980 +- 0.040 (age=-3 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 1.060 +- 0.060 (age=-3 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age -3.0 days from 20211122, with age separation of 0 days
+  20211125: freqs=[103.5, 91.47, 343.48], fluxes=[1.87, 1.98, 1.06]
+Median Monte-Carlo result for 397.500000 = 0.990968 +- 0.141752 (scaled MAD = 0.141634)
+Result using spectral index of -0.472298 for 397.500 GHz from 1.925 Jy at 97.485 GHz = 0.991152 +- 0.141752 Jy
+
+CASA <13>: au.getALMAFlux('J0418+380', '397.5GHz', lowband=3, highband=7, date='20211122')
+  Closest Band 3 measurement: 1.223 +- 0.061 (age=+6 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.299 +- 0.065 (age=+6 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.696 +- 0.035 (age=+6 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age 6.0 days from 20211122, with age separation of 0 days
+  20211116: freqs=[103.5, 91.5, 343.5], fluxes=[1.223, 1.299, 0.696]
+Median Monte-Carlo result for 397.500000 = 0.649592 +- 0.084292 (scaled MAD = 0.082378)
+Result using spectral index of -0.470983 for 397.500 GHz from 1.261 Jy at 97.500 GHz = 0.650517 +- 0.084292 Jy
+
+CASA <12>: au.getALMAFlux('J0319+4130', '397.5GHz', lowband=3, highband=7, date='20211122')
+  Closest Band 3 measurement: 15.560 +- 0.280 (age=-3 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 17.080 +- 0.280 (age=-3 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 6.530 +- 0.500 (age=-3 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age -3.0 days from 20211122, with age separation of 0 days
+  20211125: freqs=[103.5, 91.47, 343.48], fluxes=[15.56, 17.08, 6.53]
+Median Monte-Carlo result for 397.500000 = 5.827367 +- 1.130232 (scaled MAD = 1.089739)
+Result using spectral index of -0.728009 for 397.500 GHz from 16.320 Jy at 97.485 GHz = 5.866022 +- 1.130232 Jy
+
 ##########################################################################
 
 
@@ -496,5 +533,11 @@ idl2miriad, dir='AB_Aur_track6.rx400.lsb.cal.miriad',sideband='l',source='AB_Aur
 idl2miriad, dir='LkCa_15_track6.rx400.lsb.cal.miriad',sideband='l',source='LkCa_15',band=['s1','s2','s3','s4']
 
 
+
+mir_restore, 'ChiaYing_track6.rx400.lsb.cal.mir'
+
+targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP_Tau', 'CoKu_Tau_1', 'RY_Tau', 'DE_Tau', 'IP_Tau', 'FT_Tau', 'FV_Tau', 'FV_Tau', 'DH_Tau', 'IQ_Tau', 'DK_Tau', 'UZ_Tau', 'DL_Tau', 'GK_Tau', 'AA_Tau', 'LkCa_15', 'CI_Tau', '04278+2253', 'T_Tau', 'UX_Tau', 'V710_Tau', 'DM_Tau', 'DQ_Tau', 'Haro_6-37', 'DR_Tau', 'FY_Tau', 'HO_Tau', 'DN_Tau', 'DO_Tau', 'HV_Tau', 'IC_2087_IR', 'CIDA-7', 'GO_Tau', 'CIDA-7', 'DS_Tau', 'UY_Aur', 'Haro_6-39', 'GM_Aur', 'AB_Aur', 'SU_Aur', 'RW_Aur', 'CIDA-9', 'V836_Tau']
+
+foreach targ, targ_list do idl2miriad, dir=targ+'_track6.rx400.lsb.cal.miriad',sideband='l',source=targ,band=['s1','s2','s3','s4']
 
 
