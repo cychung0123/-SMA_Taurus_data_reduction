@@ -136,27 +136,14 @@ result=dat_filter(s_f, '"int" gt "230" and "int" lt "309" ')
 flag,/flag
 
 select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "7"')
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "230" and "int" lt "604" ')
+flag,/flag
+
+select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "2040" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "308" and "int" lt "363" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "368" and "int" lt "375" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "7"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "422" and "int" lt "429" ')
 flag,/flag
 
 select, /p, /reset, sideband='l'
@@ -166,36 +153,13 @@ result=dat_filter(s_f, '"int" gt "422" and "int" lt "429" ')
 flag,/flag
 
 select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "8"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "422" and "int" lt "429" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "2099" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
 result=dat_filter(s_f, '"blcd" like "2" and "blcd" like "4"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "538" and "int" lt "545" ')
-flag,/flag
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "8"')
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "538" and "int" lt "545" ')
 flag,/flag
 
 select, /p, /reset, sideband='l', sou='0510+180'
 result=dat_filter(s_f, '"blcd" like "2" and "blcd" like "6"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "400" and "int" lt "500" ')
-flag,/flag
-
-select, /p, /reset, sideband='l', sou='0510+180'
-result=dat_filter(s_f, '"blcd" like "2" and "blcd" like "8"')
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "400" and "int" lt "500" ')
 flag,/flag
@@ -366,17 +330,17 @@ flux_measure
 
 Scalar average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-      3c84             72    6.5367     208      8.13      6.5186      0.0082
-    Uranus      g      30   29.1856      19      5.35     25.0710      0.1294
-  0418+380             24    1.2220      44     10.63      1.1701      0.0095
-  0510+180             36    1.0492      43     12.54      0.9455      0.0076
+      3c84             72    6.5558     192      8.32      6.5372      0.0102
+    Uranus      g      30   29.1856      19      5.35     25.0705      0.1297
+  0418+380             24    1.2221      44     10.63      1.1698      0.0096
+  0510+180             36    1.0374      43     12.85      0.9454      0.0066
 
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-      3c84             72    6.5186     206      8.13      6.5186      0.0082
-    Uranus      g      30   25.0714      14      5.35     25.0710      0.1294
-  0418+380             24    1.1701      40     10.63      1.1701      0.0095
-  0510+180             36    0.9455      34     12.54      0.9455      0.0076
+      3c84             72    6.5372     190      8.32      6.5372      0.0102
+    Uranus      g      30   25.0708      14      5.35     25.0705      0.1297
+  0418+380             24    1.1699      40     10.63      1.1698      0.0096
+  0510+180             36    0.9454      35     12.85      0.9454      0.0066
 
 
 
@@ -386,9 +350,9 @@ Vector average:
 
 # RX 345
 #   LSB
-#   0418+380 yes 1.1701
-#   0510+180 yes 0.9455
-#   3c84     yes 6.5186
+#   0418+380 yes 1.1699
+#   0510+180 yes 0.9454
+#   3c84     yes 6.5372
 
 ##########################################################################
 
@@ -414,6 +378,10 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, ' "int" lt "700" ')
 flag,/flag
 
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "230" and "int" lt "604" ')
+flag,/flag
 
 # different calibrator
 select, /p, /reset, sideband='l', sou='0510+180'
@@ -434,12 +402,6 @@ result=dat_filter(s_f, '"int" gt "1764" and "int" lt "1813" ')
 flag,/flag
 
 # phase jump
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f, '"blcd" like "4" and "blcd" like "8"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "434" and "int" lt "539" ')
-flag,/flag
-
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -501,9 +463,9 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='telescope', refant=6, /loose
 # apply :
   all no
-#   0418+380 yes 1.1701
-#   0510+180 yes 0.9455
-#   3c84     yes 6.5186
+#   0418+380 yes 1.1699
+#   0510+180 yes 0.9454
+#   3c84     yes 6.5372
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
