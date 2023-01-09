@@ -46,7 +46,7 @@ plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='
 
 
 # regenerate continuum
-select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6'']
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
 uti_avgband, swmch1=60, swmch2=964
 plot_continuum
 # check the data was flagged correctly
@@ -374,4 +374,7 @@ targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP
 
 foreach targ, targ_list do idl2miriad, dir=targ+'_track5.rx345.lsb.cal.miriad',sideband='l',source=targ,band=['s1','s2','s3','s4','s5','s6']
 
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+idl2miriad, dir='Neptune_track5.rx345.lsb.cal.miriad',sideband='l',source='Neptune',band=['s1','s2','s3','s4','s5','s6']
 

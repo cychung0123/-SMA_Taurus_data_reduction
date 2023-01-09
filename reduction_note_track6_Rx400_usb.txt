@@ -399,7 +399,7 @@ mir_restore, 'ChiaYing_track6.tsys.bp.mir'
 
 ###### Rx345 LSB ########################################
 
-select, /p, /reset, source=['0510+180','0418+380','3c84','IQ_Tau'], sideband='u'
+select, /p, /reset, source=['0510+180','0418+380','3c84','LkCa_15'], sideband='u'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 plot_continuum, x = 'int'
 
@@ -489,5 +489,7 @@ targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP
 
 foreach targ, targ_list do idl2miriad, dir=targ+'_track6.rx400.usb.cal.miriad',sideband='u',source=targ,band=['s1','s2','s3','s4']
 
-
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+idl2miriad, dir='Uranus_track6.rx400.usb.cal.miriad',sideband='u',source='Uranus',band=['s1','s2','s3','s4']
 

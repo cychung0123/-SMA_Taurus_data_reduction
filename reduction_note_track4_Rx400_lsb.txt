@@ -383,16 +383,16 @@ result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flux_measure
 
-Scalar average: 
+Scalar average:
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-      3c84            112    5.6343     328     11.72      5.6237     -0.0010
+      3c84             94    5.7443     375     10.90      5.7352     -0.0077
     Uranus      g      30   36.9363      27     10.18     36.0729      0.1593
   0418+380             30    0.8895      51     14.62      0.8319     -0.0036
   0510+180             24    1.0418      47     13.64      0.9771      0.0011
 
-Vector average: 
+Vector average:
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-      3c84            112    5.6237     326     11.72      5.6237     -0.0010
+      3c84             94    5.7352     375     10.90      5.7352     -0.0077
     Uranus      g      30   36.0733      25     10.18     36.0729      0.1593
   0418+380             30    0.8319      45     14.62      0.8319     -0.0036
   0510+180             24    0.9771      40     13.64      0.9771      0.0011
@@ -406,7 +406,7 @@ Vector average:
 #   LSB
 #   0418+380 yes 0.8319
 #   0510+180 yes 0.9771
-#   3c84     yes 5.6237
+#   3c84     yes 5.7352
 
 ##########################################################################
 
@@ -416,15 +416,9 @@ mir_restore, 'ChiaYing_track4.tsys.bp.mir'
 
 ###### Rx400 LSB ########################################
 
-select, /p, /reset, source=['0510+180','0418+380','3c84','Haro_6-39'], sideband='l'
+select, /p, /reset, source=['0510+180','0418+380','3c84','GM_Aur'], sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 plot_continuum, x = 'int'
-
-#select, /p, /reset, sideband='l', source='0510+180'
-#result=dat_filter(s_f, '"blcd" like "5" ')
-#result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-#result=dat_filter(s_f, '"int" gt "600" and "int" lt "1000" ')
-#flag,/flag
 
 select, /p, /reset, sideband='l', source='0418+380'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -471,6 +465,20 @@ flag,/flag
 #result=dat_filter(s_f, '"int" gt "1200" and "int" lt "1300" ')
 #flag,/flag
 
+##
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1391"' )
+flag,/flag
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f, '"blcd" like "7" ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "857" and "int" lt "972"')
+flag,/flag
+
+
+
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='telescope', refant=6, /loose
@@ -478,17 +486,11 @@ gain_cal, x='hours', cal_type='pha', smoothing=0.1, tel_bsl='telescope', refant=
   all no
 #   0418+380 yes 0.8319
 #   0510+180 yes 0.9771
-#   3c84     yes 5.6237
+#   3c84     yes 5.7352
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
-
-
-select, /p, /reset, sideband='l'
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "1391"' )
-flag,/flag
 
 
 # check gain calibrator again
@@ -513,6 +515,10 @@ idl2miriad, dir='BP_Tau_track4.rx400.lsb.cal.miriad',sideband='l',source='BP_Tau
 idl2miriad, dir='AB_Aur_track4.rx400.lsb.cal.miriad',sideband='l',source='AB_Aur',band=['s1','s2','s3','s4']
 
 idl2miriad, dir='LkCa_15_track4.rx400.lsb.cal.miriad',sideband='l',source='LkCa_15',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='0510+180_track4.rx400.lsb.cal.miriad',sideband='l',source='0510+180',band=['s1','s2','s3','s4']
+
+idl2miriad, dir='0418+380_track4.rx400.lsb.cal.miriad',sideband='l',source='0418+380',band=['s1','s2','s3','s4']
 
 
 mir_restore, 'ChiaYing_track4.rx400.lsb.cal.mir'

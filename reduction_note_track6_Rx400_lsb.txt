@@ -362,7 +362,7 @@ mir_restore, 'ChiaYing_track6.tsys.bp.mir'
 
 ###### Rx345 LSB ########################################
 
-select, /p, /reset, source=['0510+180','0418+380','3c84','IQ_Tau'], sideband='l'
+select, /p, /reset, source=['0510+180','0418+380','3c84','LkCa_15'], sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 plot_continuum, x = 'int'
 
@@ -445,7 +445,6 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "1939"')
 flag,/flag
 
-select, /p, /reset, sideband='l'
 result=dat_filter(s_f, '"blcd" like "5" and "blcd" like "7"')
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "1875" ')
@@ -502,4 +501,7 @@ targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP
 
 foreach targ, targ_list do idl2miriad, dir=targ+'_track6.rx400.lsb.cal.miriad',sideband='l',source=targ,band=['s1','s2','s3','s4']
 
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+idl2miriad, dir='Uranus_track6.rx400.lsb.cal.miriad',sideband='l',source='Uranus',band=['s1','s2','s3','s4']
 

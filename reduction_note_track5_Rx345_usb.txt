@@ -374,4 +374,7 @@ targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP
 
 foreach targ, targ_list do idl2miriad, dir=targ+'_track5.rx345.usb.cal.miriad',sideband='u',source=targ,band=['s1','s2','s3','s4','s5','s6']
 
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+idl2miriad, dir='Neptune_track5.rx345.usb.cal.miriad',sideband='u',source='Neptune',band=['s1','s2','s3','s4','s5','s6']
 
