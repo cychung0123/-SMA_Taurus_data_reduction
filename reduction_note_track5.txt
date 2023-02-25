@@ -31,7 +31,11 @@ select, /p, /reset, source=['0510+180','0418+380','3c84']
 plot_continuum
 
 # flag phase jump
-# no phase jump
+select,/p,/reset
+result=dat_filter(s_f, '"blcd" like "1"  ')
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1107" and "int" lt "1154" ')
+flag,/flag
 
 # check and remove spikes
 select, /p, /reset
@@ -429,10 +433,10 @@ result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   19.0562      51     10.82     19.0562      0.0045
-      3c84             56    6.3131     444     15.21      6.3131     -0.0042
-  0418+380             56    1.1969     182     16.35      1.1969      0.0043
-  0510+180             72    0.9850     168     17.05      0.9850      0.0042
+   Neptune      g      30   19.0560      51     10.82     19.0560      0.0046
+      3c84             56    6.3119     442     15.21      6.3119     -0.0041
+  0418+380             56    1.1967     182     16.35      1.1967      0.0042
+  0510+180             72    0.9848     168     17.05      0.9848      0.0043
 
 select, /p, /reset, sideband='u', ant=['-7','-8']
 result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
@@ -440,10 +444,10 @@ result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   19.9239      45     10.82     19.9239     -0.0018
-      3c84             56    6.0474     344     15.21      6.0474      0.0051
-  0418+380             56    1.1625     117     16.35      1.1625      0.0049
-  0510+180             72    0.9728     112     17.05      0.9728      0.0029
+   Neptune      g      30   19.9232      45     10.82     19.9232     -0.0019
+      3c84             56    6.0402     343     15.21      6.0402      0.0048
+  0418+380             56    1.1608     116     16.35      1.1608      0.0047
+  0510+180             72    0.9719     112     17.05      0.9719      0.0028
 
 select, /p, /reset, sideband='l', ant=['-7','-8']
 result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
@@ -451,10 +455,10 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   23.0791      37     10.82     23.0791     -0.0229
-      3c84             56    5.9358     158     15.21      5.9358      0.0017
-  0418+380             56    1.1856      76     16.35      1.1856     -0.0107
-  0510+180             72    0.8776      67     17.05      0.8776      0.0090
+   Neptune      g      30   23.0798      37     10.82     23.0798     -0.0246
+      3c84             56    5.9316     157     15.21      5.9316      0.0021
+  0418+380             56    1.1846      76     16.35      1.1846     -0.0115
+  0510+180             72    0.8772      67     17.05      0.8772      0.0092
 
 select, /p, /reset, sideband='u', ant=['-7','-8']
 result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
@@ -462,10 +466,10 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   23.4502      34     10.82     23.4501     -0.0635
-      3c84             56    5.5794     135     15.21      5.5794     -0.0033
-  0418+380             56    1.1116      52     16.35      1.1115      0.0139
-  0510+180             72    0.8334      45     17.05      0.8333     -0.0054
+   Neptune      g      30   23.4514      34     10.82     23.4513     -0.0682
+      3c84             56    5.5797     133     15.21      5.5797     -0.0050
+  0418+380             56    1.1118      52     16.35      1.1117      0.0148
+  0510+180             72    0.8336      45     17.05      0.8336     -0.0058
 
 ## Notes #################################################################
 
@@ -473,27 +477,27 @@ Vector average:
 
 # RX 345
 #   LSB
-#   0418+380 yes 1.1969
-#   0510+180 yes 0.9850
-#   3c84     yes 6.3131
+#   0418+380 yes 1.1967
+#   0510+180 yes 0.9848
+#   3c84     yes 6.3119
 
 # RX 345
 #   USB
-#   0418+380 yes 1.1625
-#   0510+180 yes 0.9728
-#   3c84     yes 6.0474
+#   0418+380 yes 1.1608
+#   0510+180 yes 0.9719
+#   3c84     yes 6.0402
 
 # RX 400
 #   LSB
-#   0418+380 yes 1.1856
-#   0510+180 yes 0.8776
-#   3c84     yes 5.9358
+#   0418+380 yes 1.1846
+#   0510+180 yes 0.8772
+#   3c84     yes 5.9316
 
 # RX 400
 #   USB
-#   0418+380 yes 1.1116
-#   0510+180 yes 0.8334
-#   3c84     yes 5.5794
+#   0418+380 yes 1.1118
+#   0510+180 yes 0.8336
+#   3c84     yes 5.5797
 
 ##########################################################################
 
@@ -564,9 +568,9 @@ result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1969
-#   0510+180 yes 0.9850
-#   3c84     yes 6.3131
+#   0418+380 yes 1.1967
+#   0510+180 yes 0.9848
+#   3c84     yes 6.3119
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
@@ -576,9 +580,6 @@ select, /p, /reset, sideband='l', source=['0418+380','0510+180','3c84']
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 plot_continuum
 
-select,/p,/reset
-result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-mir_save, 'ChiaYing_track5.rx345.lsb.cal.mir'
 
 select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
 uti_avgband, swmch1=60, swmch2=964
@@ -588,9 +589,9 @@ result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1625
-#   0510+180 yes 0.9728
-#   3c84     yes 6.0474
+#   0418+380 yes 1.1608
+#   0510+180 yes 0.9719
+#   3c84     yes 6.0402
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
@@ -601,10 +602,6 @@ select, /p, /reset, sideband='u', source=['0418+380','0510+180','3c84']
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 plot_continuum
 
-select,/p,/reset
-result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-mir_save, 'ChiaYing_track5.rx345.usb.cal.mir'
-
 select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 
@@ -613,9 +610,9 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1856
-#   0510+180 yes 0.8776
-#   3c84     yes 5.9358
+#   0418+380 yes 1.1846
+#   0510+180 yes 0.8772
+#   3c84     yes 5.9316
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -626,10 +623,6 @@ select, /p, /reset, sideband='l', source=['0418+380','0510+180','3c84']
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 plot_continuum
 
-select,/p,/reset
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-mir_save, 'ChiaYing_track5.rx400.lsb.cal.mir'
-
 select, /p, /reset, band=['c1','s1','s2','s3','s4']
 uti_avgband, swmch1=60, swmch2=964
 
@@ -638,9 +631,9 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1116
-#   0510+180 yes 0.8334
-#   3c84     yes 5.5794
+#   0418+380 yes 1.1118
+#   0510+180 yes 0.8336
+#   3c84     yes 5.5797
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -651,10 +644,6 @@ gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=2,refant=6, /pr
 select, /p, /reset, sideband='u', source=['0418+380','0510+180','3c84']
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 plot_continuum
-
-select,/p,/reset
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-mir_save, 'ChiaYing_track5.rx400.usb.cal.mir'
 
 select, /p, /reset,  source=['0418+380','0510+180','3c84']
 plot_continuum

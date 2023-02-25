@@ -1,0 +1,942 @@
+## Software ###########################################################
+# on carbon
+# linux> source /home/cychung/software/sma-mir/setup.bsh
+# IDL> device, decomposed=0, retain=2
+##########################################################################
+
+
+##### Read Data in MIR IDL ###############################################
+
+# load raw data
+readdata, dir='SMA2021BA003_track2'
+select,/p,/re,band='c1'
+sp[psf].nch = 1
+
+select,baseline='2-4',/reset
+t1=sp[psf].tssb
+select,baseline='1-2',/reset
+sp[psf].tssb=t1
+
+select,baseline='2-4',/reset
+t1=sp[psf].tssb
+select,baseline='1-4',/reset
+sp[psf].tssb=t1
+
+select,baseline='2-5',/reset
+t1=sp[psf].tssb
+select,baseline='1-5',/reset
+sp[psf].tssb=t1
+
+select,baseline='2-6',/reset
+t1=sp[psf].tssb
+select,baseline='1-6',/reset
+sp[psf].tssb=t1
+
+select,baseline='2-7',/reset
+t1=sp[psf].tssb
+select,baseline='1-7',/reset
+sp[psf].tssb=t1
+
+select,baseline='2-8',/reset
+t1=sp[psf].tssb
+select,baseline='1-8',/reset
+sp[psf].tssb=t1
+
+
+# check the spectra to find the channel range to generate continuum
+select, /p, /reset, sideband='l', source=['bllac']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, color_var ='band'
+
+# re-generate continuum data by performing spectral averaging over the 6 spectral windows
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+uti_avgband, swmch1=60, swmch2=964
+plot_continuum, x='int'
+
+# flag the 3 outlying points
+select, /p, /reset 
+result=dat_filter(s_f, '"int" gt "1420" and "int" lt "1424" ')
+flag,/flag
+
+# inspect Tsys
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+# examing the calibrator data
+select, /p, /reset, source=['0510+180','0418+380','3c84','bllac']
+plot_continuum, x='int'
+
+# examing the calibrator data
+select, /p, /reset, source=['0510+180','0418+380','bllac']
+plot_continuum, x='int'
+
+# flag phase jump
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "1"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "951" and "int" lt "1023" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "951" and "int" lt "1023" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "951" and "int" lt "1023" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1830" and "int" lt "1878" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "508" and "int" lt "557" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1088" and "int" lt "1182" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "8"  ')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "508" and "int" lt "557" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4"  ')
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "951" and "int" lt "1023" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4"  ')
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1830" and "int" lt "1878" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7"  ')
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "508" and "int" lt "557" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "8"  ')
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "508" and "int" lt "557" ')
+flag,/flag
+
+# check and remove spikes
+select, /p, /reset
+uti_checkspike, source='bllac', /baseline, threshold=5, /fix, sample=1
+select, /p, /reset
+uti_checkspike, source='bllac', /baseline, threshold=5, /fix, sample=1
+select, /p, /reset
+uti_checkspike, source='bllac', /baseline, threshold=5, /fix, sample=1
+
+# inspect spectra
+select, /p, /reset, sideband='l', source=['bllac']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+# remove spikes
+select, /p, /reset, sideband='l', band='s3', source=['bllac']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sideband='l', band='s3', source=['bllac']
+uti_chanfix, sample=3, channel=462
+
+select, /p, /reset, sideband='l', band='s3', source=['bllac']
+uti_chanfix, sample=3, channel=463
+
+select, /p, /reset, sideband='l', band='s3', source=['bllac']
+uti_chanfix, sample=3, channel=511
+
+select, /p, /reset, sideband='l', band='s5', source=['bllac']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sideband='l', band='s5', source=['bllac']
+uti_chanfix, sample=3, channel=78
+
+select, /p, /reset, sideband='l', band='s6', source=['bllac']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sideband='l', band='s6', source=['bllac']
+uti_chanfix, sample=1, channel=517
+
+select, /p, /reset, sideband='l', band='s6', source=['bllac']
+uti_chanfix, sample=1, channel=516
+
+select, /p, /reset, band='s1'
+plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
+
+select, /p, /reset, sideband='u', band='s1', source=['IC_2087_IR']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=894
+
+select, /p, /reset, sideband='u', band='s1', source=['RW_Aur']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=238
+
+select, /p, /reset, sideband='u', band='s1', source=['RW_Aur']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=78
+
+select, /p, /reset, band='s2'
+plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
+
+select, /p, /reset, band='s2'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=836
+
+select, /p, /reset, band='s2'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=837
+
+select, /p, /reset, sideband='l', band='s2', source=['AA_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=222
+
+select, /p, /reset, sideband='l', band='s2', source=['BP_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=414
+
+select, /p, /reset, sideband='l', band='s2', source=['CI_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=278
+
+select, /p, /reset, sideband='l', band='s2', source=['CoKu_Tau_1']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=190
+
+select, /p, /reset, sideband='u', band='s2', source=['DK_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=334
+
+select, /p, /reset, sideband='u', band='s2', source=['DK_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=450
+
+select, /p, /reset, sideband='l', band='s2', source=['FV_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=414
+
+select, /p, /reset, sideband='u', band='s2', source=['IP_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=686
+
+select, /p, /reset, sideband='l', band='s2', source=['LkCa_15']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=679
+
+select, /p, /reset, sideband='l', band='s2', source=['T_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=439
+
+select, /p, /reset, sideband='u', band='s2', source=['UZ_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=362
+
+select, /p, /reset, band='s3'
+plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
+
+select, /p, /reset, band='s3'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=462
+
+select, /p, /reset, band='s3'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=463
+
+select, /p, /reset, band='s3'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=560
+
+select, /p, /reset, band='s3'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=511
+
+select, /p, /reset, sideband='l', band='s3', source=['CI_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=594
+
+select, /p, /reset, sideband='u', band='s3', source=['DH_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=438
+
+select, /p, /reset, sideband='l', band='s3', source=['DN_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=686
+
+select, /p, /reset, sideband='l', band='s3', source=['DR_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=962
+
+select, /p, /reset, sideband='u', band='s3', source=['DS_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=354
+
+select, /p, /reset, sideband='u', band='s3', source=['FT_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=586
+
+select, /p, /reset, sideband='u', band='s3', source=['FT_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=938
+
+select, /p, /reset, sideband='u', band='s3', source=['IQ_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=754
+
+select, /p, /reset, sideband='l', band='s3', source=['SU_Aur']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=286
+
+select, /p, /reset, band='s4'
+plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
+
+select, /p, /reset, band='s4'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=59
+
+select, /p, /reset, sideband='u', band='s4', source=['DM_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=551
+
+select, /p, /reset, sideband='u', band='s4', source=['DE_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=274
+
+select, /p, /reset, band='s4'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=511
+
+select, /p, /reset, sideband='u', band='s4', source=['DM_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=200
+
+select, /p, /reset, sideband='u', band='s4', source=['SU_Aur']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=518
+
+select, /p, /reset, sideband='l', band='s4', source=['UY_Aur']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=406
+
+select, /p, /reset, band='s5'
+plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
+
+select, /p, /reset, band='s5'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=78
+
+select, /p, /reset, sideband='u', band='s5', source=['3c84']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=458
+
+select, /p, /reset, sideband='u', band='s5', source=['DO_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=602
+
+select, /p, /reset, sideband='l', band='s5', source=['GO_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=398
+
+select, /p, /reset, sideband='l', band='s5', source=['HO_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=434
+
+select, /p, /reset, sideband='l', band='s5', source=['UY_Aur']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=634
+
+select, /p, /reset, sideband='u', band='s5', source=['UZ_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=338
+
+select, /p, /reset, band='s6'
+plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
+# 0418+380,0510+180 2-6 or 2-7 amp
+
+select, /p, /reset, band='s6'
+uti_chanfix, sample=4, channel=516
+
+select, /p, /reset, band='s6'
+uti_chanfix, sample=4, channel=517
+
+select, /p, /reset, sideband='u', band='s6', source=['AA_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=721
+
+select, /p, /reset, sideband='l', band='s6', source=['FV_Tau']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=794
+
+select, /p, /reset, sideband='u', band='s6', source=['FV_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=814
+
+select, /p, /reset, sideband='u', band='s6', source=['IC_2087_IR']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=674
+
+select, /p, /reset, sideband='l', band='s6', source=['T_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=730
+
+select, /p, /reset, sideband='l', band='s6', source=['V892_Tau']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+uti_chanfix, sample=4, channel=222
+
+
+
+# regenerate continuum
+select, /p, /reset, band=['c1','s1','s2','s3','s4','s5','s6']
+uti_avgband, swmch1=60, swmch2=964
+plot_continuum, x='int'
+# check the data was flagged correctly
+
+# save MIR format data
+select, /p, /reset
+mir_save, 'ChiaYing_track3.mir', /new
+
+
+### Notes ################################################################
+
+#
+# Calibrating the Rx240 LSB
+#
+
+# passband: bllac
+# source  :
+# Flux    : Uranus
+# gain    : 0510+180, 0418+380, 3c84
+
+#
+##########################################################################
+
+
+
+
+##### Inspect elevation ################################
+
+result = plo_var('dhrs','el',frames_per_page=1)
+
+##### Notes ############################################
+#
+# Elevation of Uranus in between 25 and 35 deg.
+# Elevation of Uranus in between 47 and 52 deg.
+#
+########################################################
+
+
+
+##### Initial Data Insepction ############################################
+
+select, /p, /reset, source=['0510+180','0418+380','Haro_6-39']
+plot_continuum, x = 'int'
+
+
+###### Rx240 LSB ########################################
+
+# flag scans to keep only the desired gain phase calibration
+select, /p, /reset
+result=dat_filter(s_f, '"int" gt "357" and "int" lt "388" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"int" gt "502" and "int" lt "557" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"int" gt "2112" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"int" gt "1187" and "int" lt "1215" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "1"  ')
+result=dat_filter(s_f, '"int" gt "1187" and "int" lt "1304" ')
+flag,/flag
+
+# phase jump
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4" ')
+result=dat_filter(s_f, '"int" gt "616" and "int" lt "663" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1363" and "int" lt "1466" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7"')
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "950" and "int" lt "1182" ')
+flag,/flag
+
+# check the continuum again
+select, /p, /reset
+plot_continuum, x = 'int'
+
+select, /p, /reset
+mir_save, 'ChiaYing_track3.flag.mir'
+
+
+#### Tsys Correction  ####################################################
+
+# inspect Tsys
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+select,/p,/reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+plot_var, frames_p=6
+
+select,/p,/reset
+apply_tsys
+plot_continuum, x='int'
+
+select, /p, /reset, source=['0510+180','0418+380','bllac']
+plot_continuum, x = 'int'
+# some scans of 0510+180 amplitude of antenna 7 are smaller
+# the first 4 scans of 0510+180 have smaller amplitude
+
+select, /p, /reset
+mir_save, 'ChiaYing_track3.tsys.mir'
+
+## Notes #################################################################
+#
+#    300 GHz: Tsys is 200-500 K in the target loop
+#
+#########################################################################
+
+
+
+#### Passband Calibration ################################################
+
+select, /p, /reset
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+pass_cal, cal_type='pha', tel_bsl='telescope', preavg=4,ntrim=16,smooth=4, frames_p=16, refant=6
+# bllac yes
+
+select, /p, /reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+pass_cal, cal_type='pha', tel_bsl='telescope', preavg=4,ntrim=16,smooth=4, frames_p=16, refant=6
+# bllac yes
+
+select, /p, /reset, sou='3c84'
+plot_spectra, x_var='fsky', y_vars='amp', frame_vars='rec', color_vars='rec,sb', ntrim=128, normalize=1
+
+select, /p, /reset, sou='bllac'
+result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
+plot_spectra, x_var='fsky', y_vars='amp', frame_vars='rec', color_vars='rec,sb', ntrim=128, normalize=1
+# check spectrum amplitude
+
+select, /p, /reset
+result = plo_var('dhrs','el',frames_per_page=1)
+
+# passband amp calibration
+select, /p, /reset
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, ' "el" gt "60" and "el" lt "85"' )
+pass_cal, cal_type='amp', tel_bsl='telescope', preavg=4,ntrim=16,smooth=4, frames_p=16, refant=6
+
+select, /p, /reset
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+result=dat_filter(s_f, ' "el" gt "20" and "el" lt "60"' )
+pass_cal, cal_type='amp', tel_bsl='telescope', preavg=4,ntrim=16,smooth=4, frames_p=16, refant=6
+
+select, /p, /reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, ' "el" gt "60" and "el" lt "85"' )
+pass_cal, cal_type='amp', tel_bsl='telescope', preavg=4,ntrim=16,smooth=4, frames_p=16, refant=6
+
+select, /p, /reset
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, ' "el" gt "20" and "el" lt "60"' )
+pass_cal, cal_type='amp', tel_bsl='telescope', preavg=8,ntrim=8,smooth=4, frames_p=16, refant=6
+
+# re-inspect passband splikes
+select, /p, /reset, sou='3c84', sideband='l'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sou='3c84', sideband='u'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sou='3c84', sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, sou='3c84', sideband='u'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
+
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+
+select, /p, /reset
+mir_save, 'ChiaYing_track3.tsys.bp.mir'
+
+select, /p, /reset, band='c1', source=['3c84','bllac','Uranus','0510+180','0418+380']
+mir_save, 'ChiaYing_track3.flux.mir' ,/new
+
+
+
+## Notes #################################################################
+
+# http://sma1.sma.hawaii.edu/planetvis.html
+# Uranus: 47  Jy @ 260 GHz
+Nov 20, 2021
+
+# http://sma1.sma.hawaii.edu/callist/callist.html
+# J0510+180
+ 1mm   09 Nov 2021 08:45   SMA       225.54   1.322 +/-  0.067    mgurwell
+ 1mm   11 Nov 2021 13:11   SMA       225.54   1.250 +/-  0.063    mgurwell
+ 1mm   08 Jan 2022 10:01   SMA       225.51   1.149 +/-  0.058    mgurwell
+
+# 0418+380
+ 1mm   11 Nov 2021 09:10   SMA       225.54   0.969 +/-  0.049    mgurwell
+ 1mm   23 Nov 2021 10:49   SMA       271.99   1.127 +/-  0.057    mgurwell
+ 1mm   08 Jan 2022 09:23   SMA       225.51   1.462 +/-  0.073    mgurwell
+
+# 3c84
+ 1mm   09 Nov 2021 06:33   SMA       225.54   8.999 +/-  0.450    mgurwell
+ 1mm   11 Nov 2021 13:31   SMA       225.54   9.000 +/-  0.451    mgurwell
+ 1mm   23 Nov 2021 09:43   SMA       271.99   7.935 +/-  0.397    mgurwell
+ 1mm   08 Jan 2022 06:10   SMA       225.51   9.787 +/-  0.490    mgurwell
+
+# bllac
+ 1mm   11 Nov 2021 10:00   SMA       225.54   6.079 +/-  0.308    mgurwell
+ 1mm   23 Nov 2021 04:16   SMA       271.99   5.977 +/-  0.299    mgurwell
+ 1mm   11 Jan 2022 02:12   SMA       225.52   4.778 +/-  0.239    mgurwell
+ 1mm   08 Feb 2022 18:22   SMA       225.51   7.003 +/-  0.353    mgurwell
+
+ssh cychung@almat8
+cd software
+casa57
+
+In CASA 5.7
+import sys
+sys.path.append("./analysis_scripts")
+import analysisUtils as au
+
+CASA <18>: au.getALMAFlux('J0510+180', '280GHz', lowband=3, highband=7, date='20211120')
+  Closest Band 3 measurement: 1.780 +- 0.030 (age=+4 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.910 +- 0.030 (age=+4 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.970 +- 0.050 (age=+4 days) 349.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age 4.0 days from 20211120, with age separation of 0 days
+  20211116: freqs=[103.5, 91.47, 349.5], fluxes=[1.78, 1.91, 0.97]
+Median Monte-Carlo result for 280.000000 = 1.079375 +- 0.104886 (scaled MAD = 0.105120)
+Result using spectral index of -0.505704 for 280.000 GHz from 1.845 Jy at 97.485 GHz = 1.082113 +- 0.104886 Jy
+
+CASA <19>: au.getALMAFlux('J0418+380', '280GHz', lowband=3, highband=7, date='20211120')
+  Closest Band 3 measurement: 1.223 +- 0.061 (age=+4 days) 103.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 3 measurement: 1.299 +- 0.065 (age=+4 days) 91.5 GHz (will extrapolate from this datum using spectral index)
+  Closest Band 7 measurement: 0.696 +- 0.035 (age=+4 days) 343.5 GHz 
+getALMAFluxCSV(Cycle6): Fitting for spectral index with 1 measurement pair of age 4.0 days from 20211120, with age separation of 0 days
+  20211116: freqs=[103.5, 91.5, 343.5], fluxes=[1.223, 1.299, 0.696]
+Median Monte-Carlo result for 280.000000 = 0.764535 +- 0.075572 (scaled MAD = 0.075072)
+Result using spectral index of -0.470983 for 280.000 GHz from 1.261 Jy at 97.500 GHz = 0.767242 +- 0.075572 Jy
+
+
+##########################################################################
+
+#### Measure the Absolute Flux ###########################################
+
+###### Rx240 LSB ########################################
+select, /p, /reset
+gain_cal, cal_type='pha',x_var='hours', /connect, /non_point, tel_bsl='telescope', refant=2, /loose
+# all yes
+
+select, /p, /reset, source=['3c84','0510+180','0418+380','bllac']
+plot_continuum, x = 'int'
+
+select, /p, /reset, ant=['-7','-4']
+gain_cal, cal_type='amp',x_var='hours', poly=0, tel_bsl='telescope', refant=6, /preavg, /non_point, /loose
+# all no
+# Uranus yes 1
+
+select, /p, /reset
+result = plo_var('dhrs','el',frames_per_page=1)
+
+
+select, /p, /reset, sideband='l', ant=['-7','-4']
+result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+     bllac             33    6.4968     209      6.09      6.4968      0.0122
+    Uranus      g      40   34.6484      68      6.26     34.6484     -0.0107
+  0418+380             36    1.2862     170     10.93      1.2862      0.0013
+  0510+180             42    1.0402     155     11.97      1.0402      0.0077
+
+select, /p, /reset, sideband='u', ant=['-7','-4']
+result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+     bllac             33    6.3260     209      6.09      6.3260      0.0150
+    Uranus      g      40   36.0118      57      6.26     36.0118     -0.0003
+  0418+380             36    1.2399     145     10.93      1.2399      0.0048
+  0510+180             42    0.9752     134     11.97      0.9752      0.0039
+
+select, /p, /reset, sideband='l', ant=['-7','-4']
+result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+     bllac             33    5.2638     443      6.09      5.2638      0.0069
+    Uranus      g      40   37.3213      53      6.26     37.3213      0.0006
+  0418+380             36    1.2121     234     10.93      1.2121     -0.0025
+  0510+180             42    1.0452     169     11.97      1.0452      0.0012
+
+select, /p, /reset, sideband='u', ant=['-7','-4']
+result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+     bllac             33    5.1798     346      6.09      5.1798      0.0097
+    Uranus      g      40   38.5393      47      6.26     38.5393      0.0197
+  0418+380             36    1.1933     205     10.93      1.1933      0.0010
+  0510+180             42    0.9888     143     11.97      0.9888      0.0009
+
+select, /p, /reset, sideband='l', ant=['-7','-4']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+      3c84              4    8.2329      79      5.09      8.2329      0.0128
+     bllac            240    6.4452     551      5.66      6.4452      0.0103
+    Uranus      g      40   34.6484      68      6.26     34.6484     -0.0107
+  0418+380            114    1.2352     261     10.97      1.2352      0.0011
+  0510+180            114    1.0586     226     11.52      1.0586      0.0057
+
+select, /p, /reset, sideband='u', ant=['-7','-4']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+      3c84              4    7.6817      98      5.09      7.6817      0.0130
+     bllac            240    6.2859     552      5.66      6.2859      0.0151
+    Uranus      g      40   36.0118      57      6.26     36.0118     -0.0003
+  0418+380            114    1.1900     225     10.97      1.1900     -0.0010
+  0510+180            114    1.0010     202     11.52      1.0010      0.0044
+
+select, /p, /reset, sideband='l', ant=['-7','-4']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+      3c84              4    7.3273     147      5.09      7.3272      0.0115
+     bllac            240    5.3053    1068      5.66      5.3053      0.0061
+    Uranus      g      40   37.3213      53      6.26     37.3213      0.0006
+  0418+380            114    1.1719     306     10.99      1.1719     -0.0021
+  0510+180            114    1.0470     267     11.52      1.0470      0.0010
+
+select, /p, /reset, sideband='u', ant=['-7','-4']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+flux_measure
+Vector average: 
+#   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
+      3c84              4    6.6726     123      5.09      6.6726      0.0061
+     bllac            240    5.2446     890      5.66      5.2446      0.0123
+    Uranus      g      40   38.5393      47      6.26     38.5393      0.0197
+  0418+380            114    1.1368     260     10.99      1.1368      0.0013
+  0510+180            114    0.9906     261     11.52      0.9906      0.0017
+
+
+## Notes #################################################################
+
+# apply :
+
+# RX 240
+#   LSB
+#   0418+380 yes 1.2862
+#   0510+180 yes 1.0402
+#   bllac     yes 6.4932
+
+# RX 240
+#   USB
+#   0418+380 yes 1.2399
+#   0510+180 yes 0.9752
+#   bllac     yes 6.3260
+
+# RX 345
+#   LSB
+#   0418+380 yes 1.2121
+#   0510+180 yes 1.0452
+#   bllac     yes 5.2638
+
+# RX 345
+#   USB
+#   0418+380 yes 1.1933
+#   0510+180 yes 0.9888
+#   bllac     yes 5.1798
+
+##########################################################################
+
+
+#### Gain Calibration and Miriad Files Output ############################
+mir_restore, 'ChiaYing_track3.tsys.bp.mir'
+
+# flag 3c84
+select, /p, /reset, sou='3c84'
+flag,/flag
+
+select, /p, /reset, source=['0510+180','0418+380','Haro_6-39']
+plot_continuum, x = 'int'
+
+# flag the first 3 scans of 0418+380, possible pointing error in the beginning
+select, /p, /reset
+result=dat_filter(s_f, '"int" gt "387" and "int" lt "503"')
+flag,/flag
+
+# phase jump
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7" or "blcd" like "8"')
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+result=dat_filter(s_f, '"int" gt "1363" and "int" lt "1466" ')
+flag,/flag
+
+# noisy
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4"  ')
+result=dat_filter(s_f, '"int" gt "1716" and "int" lt "1939" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "4" and "blcd" like "6" ')
+result=dat_filter(s_f, '"int" gt "1089" and "int" lt "1182" ')
+flag,/flag
+
+# noisy
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "6" and "blcd" like "7"')
+result=dat_filter(s_f, '"int" gt "1722" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "6" and "blcd" like "8"')
+result=dat_filter(s_f, '"int" gt "1722" ')
+flag,/flag
+
+select, /p, /reset
+result=dat_filter(s_f, '"blcd" like "7"')
+result=dat_filter(s_f, '"int" gt "2058" ')
+flag,/flag
+
+select, /p, /reset, band=['c1','s1','s2','s3','s4']
+uti_avgband, swmch1=60, swmch2=964
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+# apply :
+  all no
+#   0418+380 yes 1.2862
+#   0510+180 yes 1.0402
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+
+select, /p, /reset, sideband='l', source=['0418+380','0510+180']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_continuum
+
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+# apply :
+  all no
+#   0418+380 yes 1.2399
+#   0510+180 yes 0.9752
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+
+select, /p, /reset, sideband='u', source=['0418+380','0510+180']
+result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
+plot_continuum
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+# apply :
+  all no
+#   0418+380 yes 1.2121
+#   0510+180 yes 1.0452
+
+select, /p, /reset, sideband='l'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+
+select, /p, /reset, sideband='l', source=['0418+380','0510+180']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+plot_continuum
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+# apply :
+  all no
+#   0418+380 yes 1.1933
+#   0510+180 yes 0.9888
+
+select, /p, /reset, sideband='u'
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+
+select, /p, /reset, sideband='u', source=['0418+380','0510+180']
+result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
+plot_continuum
+
+select,/p,/reset
+mir_save, 'ChiaYing_track3.cal.mir'
+
+rx='rx240'
+targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP_Tau', 'CoKu_Tau_1', 'RY_Tau', 'DE_Tau', 'IP_Tau', 'FT_Tau', 'FV_Tau', 'FV_Tau', 'DH_Tau', 'IQ_Tau', 'DK_Tau', 'UZ_Tau', 'DL_Tau', 'GK_Tau', 'AA_Tau', 'LkCa_15', 'CI_Tau', '04278+2253', 'T_Tau', 'UX_Tau', 'V710_Tau', 'DM_Tau', 'DQ_Tau', 'Haro_6-37', 'DR_Tau', 'FY_Tau', 'HO_Tau', 'DN_Tau', 'DO_Tau', 'HV_Tau', 'IC_2087_IR', 'CIDA-7', 'GO_Tau', 'CIDA-7', 'DS_Tau', 'UY_Aur', 'Haro_6-39', 'GM_Aur', 'AB_Aur', 'SU_Aur', 'RW_Aur', 'CIDA-9', 'V836_Tau']
+spw_list = ['s1', 's2','s3','s4']
+sideband_list = ['l','u']
+select,/p,/reset, rx=240
+foreach sideband, sideband_list do foreach targ, targ_list do idl2miriad, dir=targ+'_track3.'+rx+'.'+sideband+'sb'+'.cal.miriad', sideband=sideband, source=targ, band=spw_list
+
+
+rx='rx345'
+targ_list=['FM_Tau', 'CW_Tau', '04113+2758', 'CY_Tau', 'DD_Tau', 'V892_Tau', 'BP_Tau', 'CoKu_Tau_1', 'RY_Tau', 'DE_Tau', 'IP_Tau', 'FT_Tau', 'FV_Tau', 'FV_Tau', 'DH_Tau', 'IQ_Tau', 'DK_Tau', 'UZ_Tau', 'DL_Tau', 'GK_Tau', 'AA_Tau', 'LkCa_15', 'CI_Tau', '04278+2253', 'T_Tau', 'UX_Tau', 'V710_Tau', 'DM_Tau', 'DQ_Tau', 'Haro_6-37', 'DR_Tau', 'FY_Tau', 'HO_Tau', 'DN_Tau', 'DO_Tau', 'HV_Tau', 'IC_2087_IR', 'CIDA-7', 'GO_Tau', 'CIDA-7', 'DS_Tau', 'UY_Aur', 'Haro_6-39', 'GM_Aur', 'AB_Aur', 'SU_Aur', 'RW_Aur', 'CIDA-9', 'V836_Tau']
+spw_list = ['s1','s2','s3','s4']
+sideband_list = ['l','u']
+select,/p,/reset, rx=345
+foreach sideband, sideband_list do foreach targ, targ_list do idl2miriad, dir=targ+'_track3.'+rx+'.'+sideband+'sb'+'.cal.miriad', sideband=sideband, source=targ, band=spw_list
+
+
+
