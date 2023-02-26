@@ -548,19 +548,19 @@ result=dat_filter(s_f, ' "el" gt "20" and "el" lt "60"' )
 pass_cal, cal_type='amp', tel_bsl='telescope', preavg=8,ntrim=8,smooth=4, frames_p=16, refant=6
 
 # re-inspect passband splikes
-select, /p, /reset, sou='3c84', sideband='l'
+select, /p, /reset, sou='bllac', sideband='l'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
-select, /p, /reset, sou='3c84', sideband='u'
+select, /p, /reset, sou='bllac', sideband='u'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
-select, /p, /reset, sou='3c84', sideband='l'
+select, /p, /reset, sou='bllac', sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
-select, /p, /reset, sou='3c84', sideband='u'
+select, /p, /reset, sou='bllac', sideband='u'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
@@ -827,7 +827,7 @@ uti_avgband, swmch1=60, swmch2=964
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, /preavg, /connect, /loose
 # apply :
   all no
 #   0418+380 yes 1.2862
@@ -835,16 +835,15 @@ gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.5,refant=6, /preavg, /loose
 
 select, /p, /reset, sideband='l', source=['0418+380','0510+180']
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_continuum
 
-
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, /preavg, /connect, /loose
 # apply :
   all no
 #   0418+380 yes 1.2399
@@ -852,7 +851,7 @@ gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.5,refant=6, /preavg, /loose
 
 select, /p, /reset, sideband='u', source=['0418+380','0510+180']
 result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
@@ -860,7 +859,7 @@ plot_continuum
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, /preavg, /connect, /loose
 # apply :
   all no
 #   0418+380 yes 1.2121
@@ -868,7 +867,7 @@ gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.5,refant=6, /preavg, /loose
 
 select, /p, /reset, sideband='l', source=['0418+380','0510+180']
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
@@ -876,7 +875,7 @@ plot_continuum
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
+gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, /preavg, /connect, /loose
 # apply :
   all no
 #   0418+380 yes 1.1933
@@ -884,7 +883,7 @@ gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=1,refant=6, /preavg, /loose
+gain_cal, x='hours',cal_type='amp',tel_bsl='telescope',smoothing=0.5,refant=6, /preavg, /loose
 
 select, /p, /reset, sideband='u', source=['0418+380','0510+180']
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
