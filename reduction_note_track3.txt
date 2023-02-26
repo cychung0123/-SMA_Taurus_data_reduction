@@ -152,36 +152,6 @@ result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
 plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
 
 # remove spikes
-select, /p, /reset, sideband='l', band='s3', source=['bllac']
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
-
-select, /p, /reset, sideband='l', band='s3', source=['bllac']
-uti_chanfix, sample=3, channel=462
-
-select, /p, /reset, sideband='l', band='s3', source=['bllac']
-uti_chanfix, sample=3, channel=463
-
-select, /p, /reset, sideband='l', band='s3', source=['bllac']
-uti_chanfix, sample=3, channel=511
-
-select, /p, /reset, sideband='l', band='s5', source=['bllac']
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
-
-select, /p, /reset, sideband='l', band='s5', source=['bllac']
-uti_chanfix, sample=3, channel=78
-
-select, /p, /reset, sideband='l', band='s6', source=['bllac']
-result=dat_filter(s_f,' "rec" eq "240" and  "wt" gt "0" ')
-plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='band', frames_per_page=4
-
-select, /p, /reset, sideband='l', band='s6', source=['bllac']
-uti_chanfix, sample=1, channel=517
-
-select, /p, /reset, sideband='l', band='s6', source=['bllac']
-uti_chanfix, sample=1, channel=516
-
 select, /p, /reset, band='s1'
 plot_spectra, x_var='channel', y_vars='amp', frame_vars='rec,sb', color_vars='blcd', preavg=4
 

@@ -276,32 +276,22 @@ result = plo_var('dhrs','el',frames_per_page=1)
 # passband amp calibration
 select, /p, /reset
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-result=dat_filter(s_f, ' "el" gt "60" and "el" lt "85"' )
+result=dat_filter(s_f, ' "el" gt "50" and "el" lt "85"' )
 pass_cal, cal_type='amp', tel_bsl='telescope', preavg=8,ntrim=8,smooth=4, frames_p=16, refant=6
 
 select, /p, /reset
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
-pass_cal, cal_type='amp', tel_bsl='telescope', preavg=16,ntrim=4,smooth=4, frames_p=16, refant=6
+result=dat_filter(s_f, ' "el" gt "30" and "el" lt "50"' )
+pass_cal, cal_type='amp', tel_bsl='telescope', preavg=8,ntrim=8,smooth=4, frames_p=16, refant=6
 
 select, /p, /reset
-result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-result=dat_filter(s_f, ' "el" gt "30" and "el" lt "40"' )
+result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
+result=dat_filter(s_f, ' "el" gt "50" and "el" lt "85"' )
 pass_cal, cal_type='amp', tel_bsl='telescope', preavg=16,ntrim=4,smooth=4, frames_p=16, refant=6
 
 select, /p, /reset
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, ' "el" gt "60" and "el" lt "85"' )
-pass_cal, cal_type='amp', tel_bsl='telescope', preavg=16,ntrim=4,smooth=4, frames_p=16, refant=6
-
-select, /p, /reset
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, ' "el" gt "40" and "el" lt "60"' )
-pass_cal, cal_type='amp', tel_bsl='telescope', preavg=16,ntrim=4,smooth=4, frames_p=16, refant=6
-
-select, /p, /reset
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, ' "el" gt "30" and "el" lt "40"' )
+result=dat_filter(s_f, ' "el" gt "30" and "el" lt "50"' )
 pass_cal, cal_type='amp', tel_bsl='telescope', preavg=16,ntrim=4,smooth=4, frames_p=16, refant=6
 
 # re-inspect passband splikes
@@ -323,11 +313,6 @@ plot_spectra, x_var='channel', y_vars='amp,pha', frame_vars='blcd', color_vars='
 
 select, /p,/reset, band=['s2','s3']
 result=dat_filter(s_f, '"blcd" like "8"  ')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-flag,/flag
-
-select, /p,/reset, band=['s4']
-result=dat_filter(s_f, '"blcd" like "7"  ')
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flag,/flag
 
@@ -428,26 +413,25 @@ select, /p, /reset
 result = plo_var('dhrs','el',frames_per_page=1)
 
 select, /p, /reset, sideband='l', ant=['-7','-8']
-result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
+result=dat_filter(s_f, ' "el" gt "60" and "el" lt "70"' )
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
-flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   19.0560      51     10.82     19.0560      0.0046
-      3c84             56    6.3119     442     15.21      6.3119     -0.0041
-  0418+380             56    1.1967     182     16.35      1.1967      0.0042
-  0510+180             72    0.9848     168     17.05      0.9848      0.0043
+   Neptune      g      30   19.0560      51     10.82     19.0560      0.0044
+      3c84             24    6.3454     295     15.14      6.3454      0.0023
+  0418+380             16    1.2137     105     14.36      1.2137      0.0044
+  0510+180             39    0.9663     124     16.74      0.9663      0.0032
 
 select, /p, /reset, sideband='u', ant=['-7','-8']
-result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
+result=dat_filter(s_f, ' "el" gt "60" and "el" lt "70"' )
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   19.9232      45     10.82     19.9232     -0.0019
-      3c84             56    6.0402     343     15.21      6.0402      0.0048
-  0418+380             56    1.1608     116     16.35      1.1608      0.0047
-  0510+180             72    0.9719     112     17.05      0.9719      0.0028
+   Neptune      g      30   19.9231      45     10.82     19.9231     -0.0021
+      3c84             24    6.0721     221     15.14      6.0721      0.0014
+  0418+380             16    1.1891      66     14.36      1.1891     -0.0030
+  0510+180             39    0.9610      81     16.74      0.9610      0.0023
 
 select, /p, /reset, sideband='l', ant=['-7','-8']
 result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
@@ -455,10 +439,10 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   23.0798      37     10.82     23.0798     -0.0246
-      3c84             56    5.9316     157     15.21      5.9316      0.0021
-  0418+380             56    1.1846      76     16.35      1.1846     -0.0115
-  0510+180             72    0.8772      67     17.05      0.8772      0.0092
+   Neptune      g      30   23.0795      37     10.82     23.0795     -0.0252
+      3c84             56    5.9689     157     15.21      5.9689      0.0028
+  0418+380             56    1.1940      76     16.35      1.1940     -0.0114
+  0510+180             72    0.8817      67     17.05      0.8816      0.0095
 
 select, /p, /reset, sideband='u', ant=['-7','-8']
 result=dat_filter(s_f, ' "el" gt "50" and "el" lt "70"' )
@@ -466,10 +450,10 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 flux_measure
 Vector average: 
 #   Source   Flags   Nscans  Flux(Jy)   SNR    meantime    REAL       IMAG
-   Neptune      g      30   23.4514      34     10.82     23.4513     -0.0682
-      3c84             56    5.5797     133     15.21      5.5797     -0.0050
-  0418+380             56    1.1118      52     16.35      1.1117      0.0148
-  0510+180             72    0.8336      45     17.05      0.8336     -0.0058
+   Neptune      g      30   23.4518      34     10.82     23.4517     -0.0675
+      3c84             56    5.7270     135     15.21      5.7270     -0.0058
+  0418+380             56    1.1453      52     16.35      1.1452      0.0154
+  0510+180             72    0.8511      45     17.05      0.8510     -0.0061
 
 ## Notes #################################################################
 
@@ -477,27 +461,27 @@ Vector average:
 
 # RX 345
 #   LSB
-#   0418+380 yes 1.1967
-#   0510+180 yes 0.9848
-#   3c84     yes 6.3119
+#   0418+380 yes 1.2137
+#   0510+180 yes 0.9663
+#   3c84     yes 6.3454
 
 # RX 345
 #   USB
-#   0418+380 yes 1.1608
-#   0510+180 yes 0.9719
-#   3c84     yes 6.0402
+#   0418+380 yes 1.1891
+#   0510+180 yes 0.9610
+#   3c84     yes 6.0721
 
 # RX 400
 #   LSB
-#   0418+380 yes 1.1846
-#   0510+180 yes 0.8772
-#   3c84     yes 5.9316
+#   0418+380 yes 1.1940
+#   0510+180 yes 0.8817
+#   3c84     yes 5.9689
 
 # RX 400
 #   USB
-#   0418+380 yes 1.1118
-#   0510+180 yes 0.8336
-#   3c84     yes 5.5797
+#   0418+380 yes 1.1453
+#   0510+180 yes 0.8511
+#   3c84     yes 5.7270
 
 ##########################################################################
 
@@ -548,12 +532,6 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 result=dat_filter(s_f, '"int" gt "425" and "int" lt "434" ')
 flag,/flag
 
-select, /p, /reset, sideband='u'
-result=dat_filter(s_f, '"blcd" like "7"')
-result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
-result=dat_filter(s_f, '"int" gt "555" and "int" lt "609" ')
-flag,/flag
-
 select, /p, /reset
 result=dat_filter(s_f, '"blcd" like "8" and "blcd" like "7"')
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -568,9 +546,9 @@ result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1967
-#   0510+180 yes 0.9848
-#   3c84     yes 6.3119
+#   0418+380 yes 1.2137
+#   0510+180 yes 0.9663
+#   3c84     yes 6.3454
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
@@ -589,9 +567,9 @@ result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1608
-#   0510+180 yes 0.9719
-#   3c84     yes 6.0402
+#   0418+380 yes 1.1891
+#   0510+180 yes 0.9610
+#   3c84     yes 6.0721
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "345" and  "wt" gt "0" ')
@@ -610,9 +588,9 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1846
-#   0510+180 yes 0.8772
-#   3c84     yes 5.9316
+#   0418+380 yes 1.1940
+#   0510+180 yes 0.8817
+#   3c84     yes 5.9689
 
 select, /p, /reset, sideband='l'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
@@ -631,9 +609,9 @@ result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
 gain_cal, x='hours', cal_type='pha', tel_bsl='telescope', refant=6, smoothing=0.1, /loose
 # apply :
   all no
-#   0418+380 yes 1.1118
-#   0510+180 yes 0.8336
-#   3c84     yes 5.5797
+#   0418+380 yes 1.1453
+#   0510+180 yes 0.8511
+#   3c84     yes 5.7270
 
 select, /p, /reset, sideband='u'
 result=dat_filter(s_f,' "rec" eq "400" and  "wt" gt "0" ')
